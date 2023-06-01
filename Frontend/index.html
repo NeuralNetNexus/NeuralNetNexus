@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ZIP File Upload</title>
+</head>
+<body>
+  <h1>ZIP File Upload</h1>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" id="zipFile" name="zipFile" accept=".zip">
+    <button type="submit">Upload</button>
+  </form>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const zipFile = document.getElementById('zipFile').files[0];
+      const formData = new FormData();
+      formData.append('zipFile', zipFile);
+
+      fetch('http://localhost:3000/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then((response) => {
+        if (response.ok) {
+          console.log('ZIP file uploaded successfully');
+        } else {
+          console.error('Error uploading ZIP file:', response.statusText);
+        }
+      })
+      .catch((error) => {
+        console.error('Error uploading ZIP file:', error);
+      });
+    });
+  </script>
+</body>
+</html>
