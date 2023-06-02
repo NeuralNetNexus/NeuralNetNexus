@@ -25,10 +25,20 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log("Failed to connect to MongoDB", err));
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-const upload = multer({ dest: "datasets/" });
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+  })
+);
+app.use(bodyParser.json({ limit: '200mb' }));
+app.use(bodyParser.urlencoded({ limit: '200mb', extended: true, parameterLimit: 100000 }));
+app.use(express.json());
+
+const upload = multer({
+  dest: "datasets/",
+  limits: { fileSize: 200 * 1024 * 1024 }, //200MB
+});
+
 
 // GET endpoint that returns "Hello World!"
 app.get("/", (req, res) => {
@@ -163,8 +173,14 @@ app.post('/upload', upload.single('zipFile'), async (req, res) => {
     console.error('Error saving file information to MongoDB:', error);
     res.status(500).send('Error saving file information');
   }
+});
+
+app.post("/fileUpload", (req, res) => {
+  console.log(req)
+  res.sendStatus(200);
+});
 
 // Start the server
 app.listen(PORT, () => {
-  console.log("Server is running on port "+PORT);
+  console.log("Server is running on port " + PORT);
 });
