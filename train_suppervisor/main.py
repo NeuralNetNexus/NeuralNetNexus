@@ -6,25 +6,28 @@ import yaml
 from kubernetes import client, config
 
 def create_job_object(job_name):
-    # Configureate Pod template container
+    # Define the job's container
     container = client.V1Container(
-        name="pi",
-        image="perl",
-        command=["perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"])
-    # Create and configure a spec section
+        name="split",
+        image="rafaelxokito/neuralnetnexussplit:latest",
+    )
+    # Define the job's template
     template = client.V1PodTemplateSpec(
-        metadata=client.V1ObjectMeta(labels={"app": "pi"}),
-        spec=client.V1PodSpec(restart_policy="Never", containers=[container]))
-    # Create the specification of deployment
+        metadata=client.V1ObjectMeta(labels={"app": job_name}),
+        spec=client.V1PodSpec(restart_policy="Never", containers=[container]),
+    )
+    # Define the job's spec
     spec = client.V1JobSpec(
         template=template,
-        backoff_limit=4)
+        backoff_limit=4,
+    )
     # Instantiate the job object
     job = client.V1Job(
         api_version="batch/v1",
         kind="Job",
         metadata=client.V1ObjectMeta(name=job_name),
-        spec=spec)
+        spec=spec,
+    )
 
     return job
 
@@ -55,7 +58,7 @@ def main():
     batch_v1 = client.BatchV1Api()
     # Create a job object with client-python API. The job we
     # created is same as the `pi-job.yaml` in the /examples folder.
-    job_name = "split"
+    job_name = "split-job"
     
     job = create_job_object(job_name)
 

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: docker.io/rafaelxokito/neuralnetnexusbackend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: databases-volume
+          mountPath: /databases
+        - name: models-volume
+          mountPath: /models
+        env:
+        - name: MONGODB_CONNECTION
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-configmap
+              key: MONGODB_CONNECTIONSTRING
+      volumes:
+      - name: databases-volume
+        persistentVolumeClaim:
+          claimName: databases-pvc
+      - name: models-volume
+        persistentVolumeClaim:
+          claimName: models-pvc

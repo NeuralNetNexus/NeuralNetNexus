@@ -7,6 +7,6 @@ spec:
     spec:
       containers:
       - name: split
-        image: split
+        image: rafaelxokito/neuralnetnexussplit:latest
       restartPolicy: Never
   backoffLimit: 4
