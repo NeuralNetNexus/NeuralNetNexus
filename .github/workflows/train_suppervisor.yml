@@ -3,7 +3,7 @@ name: Docker Build & Push Train_Suppervisor Container
 on:
   push:
     branches:
-      - release
+      - main
     paths:
       - 'train_suppervisor/**'
 

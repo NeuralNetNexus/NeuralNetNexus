@@ -3,7 +3,7 @@ name: Docker Build & Push Split Container
 on:
   push:
     branches:
-      - release
+      - main
     paths:
       - 'split/**'
 
