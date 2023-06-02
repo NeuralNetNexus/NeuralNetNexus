@@ -7,7 +7,7 @@ services:
     environment:
       - SERVER_URI=http://localhost:3001
     ports:
-      - "3001:3001"
+      - "3000:3000"
 
   api-server:
     image: backend
@@ -15,7 +15,7 @@ services:
     environment:
       - DATABASE_URI=database
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - ./Backend/datasets:/usr/app/datasets
       - ./Backend/models:/usr/app/models
