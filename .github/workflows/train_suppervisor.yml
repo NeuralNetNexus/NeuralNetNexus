@@ -2,8 +2,6 @@ name: Docker Build & Push Train_Suppervisor Container
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'train_suppervisor/**'
 

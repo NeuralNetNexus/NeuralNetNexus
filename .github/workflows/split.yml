@@ -2,8 +2,6 @@ name: Docker Build & Push Split Container
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'split/**'
 
