@@ -7,7 +7,12 @@ body {
   background: linear-gradient(-45deg, #23a6d5, #23d5ab, #ff8008, #ff4b2b);
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
-  height: 100vh; /* Set the height to 100% of the viewport height */
+  height: 100vh;
+  opacity: 1; /* Default opacity */
+}
+
+body.background-fade {
+  background: none; /* Remove background fade */
 }
 
 @keyframes gradient {

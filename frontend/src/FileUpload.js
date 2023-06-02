@@ -8,6 +8,7 @@ const FileUpload = () => {
   const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState("");
   const [data, setData] = useState([]);
+  const [backgroundFade, setBackgroundFade] = useState(true); // State for background fade presence
 
   const submitFile = (event) => {
     event.preventDefault();
@@ -50,6 +51,20 @@ const FileUpload = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Toggle handler for enabling/disabling background fade
+  const handleBackgroundFadeToggle = () => {
+    setBackgroundFade(!backgroundFade);
+  };
+
+  // Update the className of the body element
+  useEffect(() => {
+    if (backgroundFade) {
+      document.body.classList.add("background-fade");
+    } else {
+      document.body.classList.remove("background-fade");
+    }
+  }, [backgroundFade]);
 
   return (
     <>
@@ -103,7 +118,7 @@ const FileUpload = () => {
             {uploadStatus && <p>{uploadStatus}</p>}
           </Form>
         </div>
-        <Table striped bordered hover className="mt-5">
+        <Table striped bordered hover className={'mt-5'}> {/* Add fade-enabled class */}
           <thead>
             <tr>
               <th>#</th>
@@ -124,6 +139,10 @@ const FileUpload = () => {
           </tbody>
         </Table>
       </Container>
+      <div className="text-center fixed-bottom pb-3 ">
+          <label className="toggle-label"><h5>Toggle Background Fade</h5> </label>
+          <input type="checkbox" checked={backgroundFade} onChange={handleBackgroundFadeToggle} />
+        </div>
     </>
   );
 };
