@@ -2,8 +2,6 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
-const unzipper = require("unzipper");
-const archiver = require("archiver");
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
@@ -12,13 +10,21 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const app = express();
 const bodyParser = require("body-parser");
+
 // Models
 const User = require("./models/user");
+const Project = require("./models/project");
 
 const PORT = process.env.PORT || 3001;
 
+
+var database_uri = process.env.MONGODB_CONNECTION || "localhost";
+const MONGODB_URI = database_uri.startsWith("mongodb+srv://")
+  ? database_uri
+  : `mongodb://${database_uri}:27017/fileexchangehub`;
+
 mongoose
-  .connect(process.env.MONGODB_CONNECTION, {
+  .connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -27,9 +33,10 @@ mongoose
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "*",
   })
 );
+
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(bodyParser.urlencoded({ limit: '200mb', extended: true, parameterLimit: 100000 }));
 app.use(express.json());
@@ -128,6 +135,14 @@ const File = mongoose.model('File', {
 
 // POST endpoint to handle the ZIP file upload
 app.post('/upload', upload.single('zipFile'), async (req, res) => {
+  const { model } = req.body;
+
+  // Check if a model was provided in the request
+  if (!model) {
+    res.status(400).send('No model provided');
+    return;
+  }
+
   // Check if a file was sent in the request
   if (!req.file) {
     res.status(400).send('No file uploaded');
@@ -137,28 +152,28 @@ app.post('/upload', upload.single('zipFile'), async (req, res) => {
   const fileExtension = path.extname(req.file.originalname);
   if (fileExtension != '.zip') {
     res.status(400).send('Only ZIP files are allowed');
-    return; // Add return statement here
+    return;
   }
 
   // Save the uploaded ZIP file internally
   const zipFilePath = req.file.path;
 
   try {
-    // Save the information from req.file in MongoDB
-    const fileInfo = {
-      originalName: req.file.originalname,
-      sizeGB: req.file.size / (1024 * 1024 * 1024), // Convert bytes to GB
+    // Define the properties for the new Project instance
+    const projectInfo = {
+      dataset: req.file.originalname,
+      size: req.file.size / (1024 * 1024 * 1024), // Convert bytes to GB
+      model,
+      state: 'pending'
     };
 
-    // Create a new File instance
-    const file = new File(fileInfo);
+    const project = new Project(projectInfo);
 
-    const savedFile = await file.save();
-    const fileId = savedFile._id;
+    const savedProject = await project.save();
+    const projectId = savedProject._id;
 
     // Rename the ZIP file with modified name format
-    const fileExtension = path.extname(req.file.originalname);
-    const modifiedFileName = `pvc-dataset-${fileId}${fileExtension}`;
+    const modifiedFileName = `pvc-dataset-${projectId}${fileExtension}`;
     const modifiedFilePath = path.join(req.file.destination, modifiedFileName);
     fs.rename(zipFilePath, modifiedFilePath, (error) => {
       if (error) {
@@ -168,12 +183,13 @@ app.post('/upload', upload.single('zipFile'), async (req, res) => {
       }
     });
 
-    res.status(200).send('ZIP file received');
+    res.status(200).send('ZIP file received and Project created');
   } catch (error) {
-    console.error('Error saving file information to MongoDB:', error);
-    res.status(500).send('Error saving file information');
+    console.error('Error saving Project information to MongoDB:', error);
+    res.status(500).send('Error saving Project information');
   }
 });
+
 
 app.post("/fileUpload", (req, res) => {
   console.log(req)
