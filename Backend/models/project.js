@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const myModelSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+  },
   dataset: {
     type: String,
     required: true,
