@@ -1,13 +1,12 @@
-# syntax=docker/dockerfile:1
-
 FROM python:3.8-slim-buster
 
 WORKDIR /app
 
-COPY requirements.txt requirements.txt
+ADD requirements.txt /app
 
-RUN pip3 install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+ADD . /app
 
-ENTRYPOINT [ "python3",  "main.py" ] 
+# Run split.py when the container launches
+CMD ["python", "split.py"]
