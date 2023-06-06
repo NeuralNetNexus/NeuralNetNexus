@@ -6,8 +6,9 @@ services:
     build: ./Frontend
     environment:
       - SERVER_URI=http://localhost:3001
+      - SOCKET_URI=http://localhost:3002
     ports:
-      - "3000:3000"
+      - "3000:8080"
 
   api-server:
     image: backend
@@ -19,6 +20,12 @@ services:
     volumes:
       - ./Backend/datasets:/usr/app/datasets
       - ./Backend/models:/usr/app/models
+
+  socket-server:
+    image: socket-server
+    build: ./socket-server
+    ports:
+      - "3002:3002"
 
   database:
     image: mongo
