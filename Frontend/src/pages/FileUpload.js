@@ -19,7 +19,7 @@ export default function App() {
         estimated: estimated || 0  
       }
     }
-    axios.post('__SERVER_URI__/fileUpload', file, {
+    axios.post('__SERVER_URI__/upload', file, {
       onUploadProgress: (event) => {
         setFiles(pre => {
           return { ...pre, [file.uid]: getFileObject(event.progress, event.estimated) };

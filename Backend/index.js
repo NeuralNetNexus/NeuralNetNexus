@@ -17,7 +17,6 @@ const Project = require("./models/project");
 
 const PORT = process.env.PORT || 3001;
 
-
 var database_uri = process.env.MONGODB_CONNECTION || "localhost";
 const MONGODB_URI = database_uri.startsWith("mongodb+srv://")
   ? database_uri
@@ -188,12 +187,6 @@ app.post('/upload', upload.single('zipFile'), async (req, res) => {
     console.error('Error saving Project information to MongoDB:', error);
     res.status(500).send('Error saving Project information');
   }
-});
-
-
-app.post("/fileUpload", (req, res) => {
-  console.log(req)
-  res.sendStatus(200);
 });
 
 // Start the server
