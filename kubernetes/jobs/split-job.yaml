@@ -3,6 +3,15 @@ kind: Job
 metadata:
   name: split
 spec:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: split
+            operator: In
+            values:
+            - 'yes'
   template:
     spec:
       containers:
@@ -10,3 +19,5 @@ spec:
         image: rafaelxokito/neuralnetnexussplit:latest
       restartPolicy: Never
   backoffLimit: 4
+  nodeSelector:
+        kubernetes.io/role: auxilliar

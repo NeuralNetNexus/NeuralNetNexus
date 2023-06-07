@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend-deployment
+  namespace: backend
 spec:
   selector:
     matchLabels:
@@ -17,7 +18,7 @@ spec:
         image: docker.io/rafaelxokito/neuralnetnexusbackend:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 3000
+        - containerPort: 3001
         volumeMounts:
         - name: databases-volume
           mountPath: /databases
@@ -36,3 +37,6 @@ spec:
       - name: models-volume
         persistentVolumeClaim:
           claimName: models-pvc
+      nodeSelector:
+        kubernetes.io/role: platform
+        
