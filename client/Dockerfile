@@ -6,7 +6,7 @@ RUN npm install --silent
 COPY . ./
 RUN npm run build
 
-# Stage 2: Serve the app using Nginx
+# Stage 2: Serve the app using Nginx 
 FROM --platform=linux/amd64 nginx:latest
 COPY --from=build /app/build /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
