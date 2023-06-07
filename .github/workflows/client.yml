@@ -3,7 +3,7 @@ name: Docker Build & Push Frontend
 on:
   push:
     paths:
-      - 'frontend/**'
+      - 'client/**'
 
 jobs:
   docker-build-push:
