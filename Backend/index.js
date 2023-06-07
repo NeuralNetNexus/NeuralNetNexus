@@ -13,6 +13,7 @@ const bodyParser = require("body-parser");
 
 // Models
 const User = require("./models/user");
+const File = require("./models/file");
 const Project = require("./models/project");
 
 const PORT = process.env.PORT || 3001;
@@ -43,6 +44,16 @@ app.use(express.json());
 const upload = multer({
   dest: "datasets/",
   limits: { fileSize: 200 * 1024 * 1024 }, //200MB
+  fileFilter: function (req, file, cb) {
+   if (file.originalname.endsWith('.zip')) {
+      // Allow the upload
+      cb(null, true);
+    } 
+    else {
+      // Reject the upload
+      cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Only one file allowed!'));
+    }
+  }
 });
 
 
@@ -70,7 +81,7 @@ app.post(
   async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ error: 'REGISTER_FAILED', message: errors.array() });
     }
 
     const { email, password, role, name } = req.body;
@@ -80,13 +91,14 @@ app.post(
 
     try {
       await user.save();
-      res.status(201).send("User registered successfully");
+      res.status(201).json({ message : "User registered successfully" });
+
     } catch (error) {
       if (error.code === 11000) {
         // MongoDB duplicate key error code
-        return res.status(409).send("Username is already taken");
+        return res.status(409).json({message: "Username is already taken"});
       }
-      res.status(500).send("Error when registering your account");
+      return res.status(500).json({ error: 'REGISTER_FAILED', message: "Error when registering your account" });
     }
   }
 );
@@ -101,18 +113,27 @@ app.post(
   async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ 
+        error: 'LOGIN_FAILED',
+        message:  errors.array()
+      });
     }
     const { email, password } = req.body;
     try {
       const user = await User.findOne({ email: email });
       if (!user) {
-        return res.status(401).send("Invalid credentials");
+        return res.status(401).json({ 
+          error: 'LOGIN_FAILED',
+          message: 'Invalid credentials'
+        });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        return res.status(401).send("Invalid credentials");
+        return res.status(401).json({ 
+          error: 'LOGIN_FAILED',
+          message: 'Invalid credentials'
+        });
       }
       const token = jwt.sign(
         { userId: user._id, role: user.role },
@@ -121,39 +142,66 @@ app.post(
       );
       res.json({ token: token, userId: user._id });
     } catch (err) {
-      res.status(500).send("Error with login");
+      res.status(500).json({ 
+        error: 'LOGIN_FAILED',
+        message: 'Error with login'
+      });
     }
   }
 );
 
-// Define the File model outside the request handler function
-const File = mongoose.model('File', {
-  originalName: String,
-  sizeGB: Number,
-});
-
 // POST endpoint to handle the ZIP file upload
-app.post('/upload', upload.single('zipFile'), async (req, res) => {
-  const { model } = req.body;
+app.post("/upload", (req, res, next) => {
+  upload.single("file")(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_UNEXPECTED_FILE") {
+        // Handle the unexpected file error
+        return res.status(400).json({ error: 'UPLOAD_FAILED', message: "Only one file allowed" });
+      }
+      // Handle other multer errors if needed
+    } else if (err) {
+      // Handle other errors if needed
+    }
+
+    // Proceed to the next middleware or route handler
+    next();
+  });
+}, async function (req, res, next) {
+  
+  const { model, projectName } = req.body;
 
   // Check if a model was provided in the request
   if (!model) {
-    res.status(400).send('No model provided');
+    res.status(400).json({ 
+      error: 'UPLOAD_FAILED',
+      message: 'No model provided'
+    });
     return;
   }
-
   // Check if a file was sent in the request
   if (!req.file) {
-    res.status(400).send('No file uploaded');
+    res.status(400).json({ 
+      error: 'UPLOAD_FAILED',
+      message: 'No file uploaded'
+    });
     return;
   }
-
   const fileExtension = path.extname(req.file.originalname);
   if (fileExtension != '.zip') {
-    res.status(400).send('Only ZIP files are allowed');
+    res.status(400).json({ 
+      error: 'UPLOAD_FAILED',
+      message: 'Only ZIP file is allowed'
+    });
+    return; // Add return statement here
+  }
+  // Check if a file was sent in the request
+  if (!projectName) {
+    res.status(400).json({ 
+      error: 'UPLOAD_FAILED',
+      message: 'No project name was given'
+    });
     return;
   }
-
   // Save the uploaded ZIP file internally
   const zipFilePath = req.file.path;
 
@@ -163,7 +211,8 @@ app.post('/upload', upload.single('zipFile'), async (req, res) => {
       dataset: req.file.originalname,
       size: req.file.size / (1024 * 1024 * 1024), // Convert bytes to GB
       model,
-      state: 'pending'
+      state: 'pending',
+      name: projectName
     };
 
     const project = new Project(projectInfo);
@@ -181,11 +230,15 @@ app.post('/upload', upload.single('zipFile'), async (req, res) => {
         console.log('New dataset saved as:', modifiedFileName);
       }
     });
-
-    res.status(200).send('ZIP file received and Project created');
+    res.status(200).json({ 
+      message: 'ZIP file received'
+    });
   } catch (error) {
-    console.error('Error saving Project information to MongoDB:', error);
-    res.status(500).send('Error saving Project information');
+    console.error('Error saving file information to MongoDB:', error);
+    res.status(500).json({ 
+      error: 'UPLOAD_FAILED',
+      message: 'Error saving file information'
+    });
   }
 });
 
