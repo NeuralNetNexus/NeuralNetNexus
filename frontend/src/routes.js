@@ -10,6 +10,7 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import ProjectPage from './pages/ProjectPage';
+import NewProjectPage from './pages/NewProjectPage';
 
 // ----------------------------------------------------------------------
 
@@ -25,6 +26,7 @@ export default function Router() {
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
         { path: 'project', element: <ProjectPage /> },
+        { path: 'newproject', element: <NewProjectPage /> },
       ],
     },
     {
