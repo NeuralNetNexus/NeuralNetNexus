@@ -1,9 +1,5 @@
 name: Docker Build & Push Client
 
-on:
-  push:
-    paths:
-      - 'client/**'
 
 jobs:
   docker-build-push:
