@@ -13,7 +13,6 @@ const bodyParser = require("body-parser");
 
 // Models
 const User = require("./models/user");
-const File = require("./models/file");
 const Project = require("./models/project");
 
 const PORT = process.env.PORT || 3001;
