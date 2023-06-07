@@ -2,8 +2,6 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
-const unzipper = require("unzipper");
-const archiver = require("archiver");
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
@@ -12,37 +10,52 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const app = express();
 const bodyParser = require("body-parser");
+
 // Models
 const User = require("./models/user");
 const File = require("./models/file");
+const Project = require("./models/project");
 
 const PORT = process.env.PORT || 3001;
 
+var database_uri = process.env.MONGODB_CONNECTION || "localhost";
+const MONGODB_URI = database_uri.startsWith("mongodb+srv://")
+  ? database_uri
+  : `mongodb://${database_uri}:27017/fileexchangehub`;
+
 mongoose
-  .connect(process.env.MONGODB_CONNECTION, {
+  .connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log("Failed to connect to MongoDB", err));
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-const upload = multer({ dest: "datasets/" }, {
+app.use(
+  cors({
+    origin: "*",
+  })
+);
+
+app.use(bodyParser.json({ limit: '200mb' }));
+app.use(bodyParser.urlencoded({ limit: '200mb', extended: true, parameterLimit: 100000 }));
+app.use(express.json());
+
+const upload = multer({
+  dest: "datasets/",
+  limits: { fileSize: 200 * 1024 * 1024 }, //200MB
   fileFilter: function (req, file, cb) {
-    var error_msg = error instanceof multer.MulterError
-    if (file.originalname.endsWith('.zip')) {
+   if (file.originalname.endsWith('.zip')) {
       // Allow the upload
       cb(null, true);
     } 
-    if(error_msg) {
+    else {
       // Reject the upload
       cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Only one file allowed!'));
     }
-  },
-  
+  }
 });
+
 
 // GET endpoint that returns "Hello World!"
 app.get("/", (req, res) => {
@@ -154,6 +167,17 @@ app.post("/upload", (req, res, next) => {
     next();
   });
 }, async function (req, res, next) {
+  
+  const { model, projectName } = req.body;
+
+  // Check if a model was provided in the request
+  if (!model) {
+    res.status(400).json({ 
+      error: 'UPLOAD_FAILED',
+      message: 'No model provided'
+    });
+    return;
+  }
   // Check if a file was sent in the request
   if (!req.file) {
     res.status(400).json({ 
@@ -166,30 +190,38 @@ app.post("/upload", (req, res, next) => {
   if (fileExtension != '.zip') {
     res.status(400).json({ 
       error: 'UPLOAD_FAILED',
-      message: 'Only 1 ZIP file is allowed'
+      message: 'Only ZIP file is allowed'
     });
     return; // Add return statement here
   }
-
+  // Check if a file was sent in the request
+  if (!projectName) {
+    res.status(400).json({ 
+      error: 'UPLOAD_FAILED',
+      message: 'No project name was given'
+    });
+    return;
+  }
   // Save the uploaded ZIP file internally
   const zipFilePath = req.file.path;
 
   try {
-    // Save the information from req.file in MongoDB
-    const fileInfo = {
-      originalName: req.file.originalname,
-      sizeGB: req.file.size / (1024 * 1024 * 1024), // Convert bytes to GB
+    // Define the properties for the new Project instance
+    const projectInfo = {
+      dataset: req.file.originalname,
+      size: req.file.size / (1024 * 1024 * 1024), // Convert bytes to GB
+      model,
+      state: 'pending',
+      name: projectName
     };
 
-    // Create a new File instance
-    const file = new File(fileInfo);
+    const project = new Project(projectInfo);
 
-    const savedFile = await file.save();
-    const fileId = savedFile._id;
+    const savedProject = await project.save();
+    const projectId = savedProject._id;
 
     // Rename the ZIP file with modified name format
-    const fileExtension = path.extname(req.file.originalname);
-    const modifiedFileName = `pvc-dataset-${fileId}${fileExtension}`;
+    const modifiedFileName = `pvc-dataset-${projectId}${fileExtension}`;
     const modifiedFilePath = path.join(req.file.destination, modifiedFileName);
     fs.rename(zipFilePath, modifiedFilePath, (error) => {
       if (error) {
@@ -208,10 +240,9 @@ app.post("/upload", (req, res, next) => {
       message: 'Error saving file information'
     });
   }
-
 });
 
 // Start the server
 app.listen(PORT, () => {
-  console.log("Server is running on port "+PORT);
+  console.log("Server is running on port " + PORT);
 });
