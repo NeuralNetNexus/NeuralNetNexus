@@ -1,4 +1,4 @@
-name: Docker Build & Push Backend
+name: Docker Build & Push Frontend
 
 on:
   push:
@@ -22,10 +22,10 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-    - name: Build and push the Backend image
+    - name: Build and push the Frontend image
       uses: docker/build-push-action@v2
       with:
         context: client
         file: client/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/neuralnetnexusbackend:latest
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/neuralnetnexusfrontend:latest
