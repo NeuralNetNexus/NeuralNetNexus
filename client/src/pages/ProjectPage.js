@@ -158,7 +158,7 @@ export default function ProjectPage() {
   return (
     <>
       <Helmet>
-        <title> Project | Neural Net Nexus </title>
+        <title> Project | Neural Net Nexus </title> 
       </Helmet>
 
       <Container>
