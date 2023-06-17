@@ -16,8 +16,12 @@ def train(file_path, dest_dir, model):
 if __name__ == '__main__':
     file_path = "/app/datasets/dataset.zip"
     dest_dir =  "/app/datasets"
-    model = os.getenv('MODEL')
-    JOB_COMPLETION_INDEX = int(os.getenv('JOB_COMPLETION_INDEX'))
-    print("Starting training job with index:", JOB_COMPLETION_INDEX)
+    try:
+        model = os.getenv('MODEL')
+        JOB_COMPLETION_INDEX = int(os.getenv('JOB_COMPLETION_INDEX'))
+        print("Starting training job with index:", JOB_COMPLETION_INDEX)
+    except Exception as e:
+        print(e)
+        model = "default"
 
     train(file_path, dest_dir, model)

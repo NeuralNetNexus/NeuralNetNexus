@@ -16,8 +16,11 @@ def train(file_path, dest_dir, model):
 if __name__ == '__main__':
     file_path = "/app/datasets/dataset.zip"
     dest_dir =  "/app/datasets"
-    model = os.getenv('MODEL')
-    print("Starting aggregator job")
-
+    try:
+        model = os.getenv('MODEL')
+        print("Starting aggregator job")
+    except Exception as e:
+        print(e)
+        model = "default"
 
     train(file_path, dest_dir, model)
