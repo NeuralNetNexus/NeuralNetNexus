@@ -8,5 +8,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 ADD . /app
 
-# Run main.py when the container launches
+# Run split.py when the container launches
 CMD ["python", "main.py"]

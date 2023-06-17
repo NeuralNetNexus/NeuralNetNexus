@@ -232,6 +232,8 @@ app.post("/upload", (req, res, next) => {
     res.status(200).json({ 
       message: 'ZIP file received'
     });
+
+    // TODO - Trigger the train-suppervisor job here
   } catch (error) {
     console.error('Error saving file information to MongoDB:', error);
     res.status(500).json({ 

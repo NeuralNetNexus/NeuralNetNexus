@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deve ser sempre três ou mais, 1 master, 1 worker computing, 1 worker platofrm
+# Deve ser sempre três ou mais, 1 master, 1 worker computing, 1 worker platform, 1 worker auxilliar
 minikube delete --profile neuralnetnexus
 
 minikube start --nodes 4 -p neuralnetnexus

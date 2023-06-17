@@ -99,7 +99,7 @@ def main():
 
     # Training Jobs
     train_job_name = f"train-job-{project_id}"
-    train_job = create_job_object(train_job_name, "rafaelxokito/neuralnetnexustrain:latest", completions=5, parallelism=5)
+    train_job = create_job_object(train_job_name, "rafaelxokito/neuralnetnexustrain:latest", completions=env_vars["PARTS"], parallelism=env_vars["PARTS"])
     create_job(batch_v1, train_job)
     get_job_status(batch_v1, train_job_name)
 
