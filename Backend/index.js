@@ -10,6 +10,13 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const app = express();
 const bodyParser = require("body-parser");
+const k8s = require('@kubernetes/client-node');
+const k8sObjects = require('./kubernetes-objects');
+
+const kc = new k8s.KubeConfig();
+kc.loadFromDefault();
+
+const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
 // Models
 const User = require("./models/user");
@@ -234,6 +241,11 @@ app.post("/upload", (req, res, next) => {
     });
 
     // TODO - Trigger the train-suppervisor job here
+    k8sApi.createNamespacedJob('default', k8sObjects.train_suppervisorObject).then((response) => {
+      console.log('Job created with response:', response.body);
+    }).catch((err) => {
+        console.error('Error creating job:', err);
+    });
   } catch (error) {
     console.error('Error saving file information to MongoDB:', error);
     res.status(500).json({ 

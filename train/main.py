@@ -24,4 +24,4 @@ if __name__ == '__main__':
         print(e)
         model = "default"
 
-    train(file_path, dest_dir, model)
+    train(file_path, dest_dir, model) 

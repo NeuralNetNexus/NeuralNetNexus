@@ -19,24 +19,12 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3001
-        volumeMounts:
-        - name: databases-volume
-          mountPath: /databases
-        - name: models-volume
-          mountPath: /models
         env:
         - name: MONGODB_CONNECTION
           valueFrom:
             configMapKeyRef:
               name: mongodb-configmap
               key: MONGODB_CONNECTIONSTRING
-      volumes:
-      - name: databases-volume
-        persistentVolumeClaim:
-          claimName: databases-pvc
-      - name: models-volume
-        persistentVolumeClaim:
-          claimName: models-pvc
       nodeSelector:
         kubernetes.io/role: platform
         

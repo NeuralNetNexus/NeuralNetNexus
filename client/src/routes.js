@@ -16,7 +16,7 @@ import NewProjectPage from './pages/NewProjectPage';
 
 export default function Router() {
   const routes = useRoutes([
-    {
+    { 
       path: '/dashboard',
       element: <DashboardLayout />,
       children: [

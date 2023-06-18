@@ -28,4 +28,5 @@ jobs:
         context: train_suppervisor
         file: train_suppervisor/Dockerfile
         push: true
+        platforms: linux/amd64,linux/arm64
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/neuralnetnexustrain_suppervisor:latest

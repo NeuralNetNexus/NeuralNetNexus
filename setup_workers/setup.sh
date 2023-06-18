@@ -32,6 +32,9 @@ kubectl label nodes neuralnetnexus-m02 aggregator=yes
 kubectl label nodes neuralnetnexus-m03 split=yes
 kubectl label nodes neuralnetnexus-m03 train_suppervisor=yes
 
+# Criar as Storage Classes [datasets and models]
+kubectl apply -f ../kubernetes/storageclass
+
 # Platform deployment
 kubectl apply -f ../kubernetes/configmaps/*
 kubectl apply -f ../kubernetes/deployments

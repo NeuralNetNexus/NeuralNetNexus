@@ -5,3 +5,5 @@ metadata:
 data:
   # property-like keys; each key maps to a simple value
   MONGODB_CONNECTIONSTRING: "mongodb+srv://admin:admin@nexusdatabase.ggnrqr6.mongodb.net/"
+  GCP_PROJECT_ID: "neuralnetnexus"
+  BUCKET_NAME: "neuralnetnexus-bucket"

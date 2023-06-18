@@ -28,4 +28,4 @@ if __name__ == '__main__':
     dest_dir =  "/app/datasets"
     parts = int(os.getenv('PARTS'))
 
-    split_zip(file_path, dest_dir, parts)
+    split_zip(file_path, dest_dir, parts) 
