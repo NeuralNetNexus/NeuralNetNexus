@@ -25,9 +25,9 @@ const Project = require("./models/project");
 const PORT = process.env.PORT || 3001;
 
 var database_uri = process.env.MONGODB_CONNECTION || "localhost";
-const MONGODB_URI = database_uri.startsWith("mongodb+srv://")
+const MONGODB_URI = database_uri.startsWith("mongodb://")
   ? database_uri
-  : `mongodb://${database_uri}:27017/fileexchangehub`;
+  : `mongodb://${database_uri}:27017/neuralnetnexus`;
 
 mongoose
   .connect(MONGODB_URI, {
