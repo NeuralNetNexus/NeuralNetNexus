@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: databases-pvc
+  name: models-pvc
   namespace: backend
 spec:
   accessModes:
