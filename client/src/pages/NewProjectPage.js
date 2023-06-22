@@ -33,7 +33,7 @@ const ProjectPage = () => {
         formData.append('dataset', dataset);
 
         try {
-            const response = await axios.post('/api/project', formData);
+            const response = await axios.post('/api/upload', formData);
             console.log(response.data);
         } catch (err) {
             console.error(err);

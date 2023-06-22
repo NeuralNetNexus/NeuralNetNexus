@@ -28,5 +28,4 @@ jobs:
         context: Backend
         file: Backend/Dockerfile
         push: true
-        platforms: linux/amd64,linux/arm64
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/neuralnetnexusbackend:latest

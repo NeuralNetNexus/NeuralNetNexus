@@ -19,6 +19,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
+        env:
+        - name: SERVER_URI
+          value: "http://backend-service:3001"
+        - name: SOCKET_URI
+          value: "http://socket-service:3002"
       nodeSelector:
         kubernetes.io/role: platform
         

@@ -51,10 +51,10 @@ const upload = multer({
   dest: "datasets/",
   limits: { fileSize: 200 * 1024 * 1024 }, //200MB
   fileFilter: function (req, file, cb) {
-   if (file.originalname.endsWith('.zip')) {
+    if (path.extname(req.file.originalname) == ".zip") {
       // Allow the upload
       cb(null, true);
-    } 
+    }
     else {
       // Reject the upload
       cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Only one file allowed!'));

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   client:
     image: frontend
-    build: ./Frontend
+    build: ./client
     environment:
       - SERVER_URI=http://localhost:3001
       - SOCKET_URI=http://localhost:3002

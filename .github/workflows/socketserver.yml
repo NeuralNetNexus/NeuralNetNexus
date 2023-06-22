@@ -1,9 +1,9 @@
-name: Docker Build & Push Frontend
+name: Docker Build & Push Socketserver
 
 on:
   push:
     paths:
-      - 'client/**'
+      - 'socket-server/**'
 
 jobs:
   docker-build-push:
@@ -22,10 +22,10 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-    - name: Build and push the Frontend image
+    - name: Build and push the Socketserver image
       uses: docker/build-push-action@v2
       with:
         context: client
         file: client/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/neuralnetnexusfrontend:latest
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/neuralnetnexussocketserver:latest

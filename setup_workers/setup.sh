@@ -9,8 +9,8 @@ kubectl apply -f ../kubernetes/roles
 
 # Associar uma role a cada nó
 kubectl label nodes neuralnetnexus-m02 kubernetes.io/role=computing
-kubectl label nodes neuralnetnexus-m03 kubernetes.io/role=auxilliar
-kubectl label nodes neuralnetnexus-m04 kubernetes.io/role=platform
+kubectl label nodes ubuntu kubernetes.io/role=auxilliar
+kubectl label nodes fedora kubernetes.io/role=platform
 
 # Criar os namespaces
 kubectl create namespace frontend
@@ -29,11 +29,8 @@ kubectl label nodes neuralnetnexus-m02 train=yes
 kubectl label nodes neuralnetnexus-m02 aggregator=yes
 
 # Criar as labels para o auxilliar
-kubectl label nodes neuralnetnexus-m03 split=yes
-kubectl label nodes neuralnetnexus-m03 train_suppervisor=yes
-
-# Criar as Storage Classes [datasets and models]
-kubectl apply -f ../kubernetes/storageclass
+kubectl label nodes ubuntu split=yes
+kubectl label nodes ubuntu train_suppervisor=yes
 
 # Platform deployment
 kubectl apply -f ../kubernetes/configmaps/*
