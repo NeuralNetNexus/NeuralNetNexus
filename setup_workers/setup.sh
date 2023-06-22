@@ -9,7 +9,7 @@ kubectl apply -f ../kubernetes/roles
 
 # Associar uma role a cada nó
 kubectl label nodes neuralnetnexus-m02 kubernetes.io/role=computing
-kubectl label nodes ubuntu kubernetes.io/role=auxilliar
+kubectl label nodes raspberrypitwo kubernetes.io/role=auxilliar
 kubectl label nodes fedora kubernetes.io/role=platform
 
 # Criar os namespaces
@@ -33,9 +33,11 @@ kubectl label nodes ubuntu split=yes
 kubectl label nodes ubuntu train_suppervisor=yes
 
 # Platform deployment
-kubectl apply -f ../kubernetes/configmaps/*
-kubectl apply -f ../kubernetes/deployments
-kubectl apply -f ../kubernetes/services
-kubectl apply -f ../kubernetes/ingress
+kubectl apply -f kubernetes/configmaps/*
+kubectl apply -f kubernetes/pvc/pvc-mongodb.yaml
+kubectl apply -f kubernetes/statefulset
+kubectl apply -f kubernetes/deployments
+kubectl apply -f kubernetes/services
+kubectl apply -f kubernetes/ingress
 
 kubectl get nodes -o wide
