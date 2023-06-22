@@ -5,6 +5,6 @@ metadata:
   namespace: backend
 data:
   # property-like keys; each key maps to a simple value
-  MONGODB_CONNECTIONSTRING: "mongodb://root:root@mongo-service.backend.svc.cluster.local:27017/neuralnetnexus"
+  MONGODB_CONNECTIONSTRING: "mongodb://root:root@mongo-service.backend.svc.cluster.local:27017"
   GCP_PROJECT_ID: "neuralnetnexus"
   BUCKET_NAME: "neuralnetnexus-bucket"
