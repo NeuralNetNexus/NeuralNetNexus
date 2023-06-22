@@ -23,9 +23,11 @@ spec:
           volumeMounts:
             - name: mongodb-data
               mountPath: /data/db
-          environment: 
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: root
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: root
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: root
       nodeSelector:
         kubernetes.io/role: platform
       volumes:
