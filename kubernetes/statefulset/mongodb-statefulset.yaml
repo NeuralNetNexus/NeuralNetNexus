@@ -23,8 +23,8 @@ spec:
           volumeMounts:
             - name: mongodb-data
               mountPath: /data/db
-          nodeSelector:
-            kubernetes.io/role: platform
+      nodeSelector:
+        kubernetes.io/role: platform
       volumes:
         - name: mongodb-data
           persistentVolumeClaim:
