@@ -13,7 +13,7 @@ microk8s start #--nodes 4  -p neuralnetnexus
 
 
 # Label the nodes
-microk8s kubectl apply -f ../kubenetes/roles
+microk8s kubectl apply -f kubernetes/roles
 
 #microk8s kubectl delete role neuralnetnexus-m02
 #microk8s kubectl delete role neuralnetnexus-m03
