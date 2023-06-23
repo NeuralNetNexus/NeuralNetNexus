@@ -21,7 +21,6 @@ const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 // Models
 const User = require("./models/user");
 const Project = require("./models/project");
-const { debug } = require("console");
 
 const PORT = process.env.PORT || 3001;
 
@@ -60,9 +59,6 @@ const upload = multer({
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(bodyParser.urlencoded({ limit: '200mb', extended: true, parameterLimit: 100000 }));
 app.use(express.json());
-
-
-
 
 // GET endpoint that returns "Hello World!"
 app.get("/", (req, res) => {
@@ -158,11 +154,8 @@ app.post(
 );
 
 // POST endpoint to handle the ZIP file upload
-app.post("/api/upload", upload.single("dataset"), async (req, res, next) => {
+app.post("/upload", upload.single("dataset"), async (req, res, next) => {
   const { model, projectName } = req.body;
-
-  console.log("ola")
-  console.log(model)
 
   // Check if a model was provided in the request
   if (!model) {
@@ -249,7 +242,6 @@ app.post("/api/upload", upload.single("dataset"), async (req, res, next) => {
 
       
   } catch (error) { 
-    console.log("adeus")
     console.error('Error saving file information to MongoDB:', error);
     res.status(500).json({
       error: 'UPLOAD_FAILED',

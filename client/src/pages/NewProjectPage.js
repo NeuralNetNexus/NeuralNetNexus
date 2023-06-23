@@ -28,14 +28,13 @@ const ProjectPage = () => {
         setLoading(true);
         
         const formData = new FormData();
-        formData.append('text', "ola");
         formData.append('projectName', projectName);
         formData.append('model', selectedNet);
         formData.append('dataset', dataset);
           
         console.log(dataset)
         try {
-            const response = await axios.post('http://localhost:3001/api/upload', formData, {
+            const response = await axios.post('http://localhost:3001/upload', formData, {
               headers: {
                 'Content-Type': 'multipart/form-data',
               },
