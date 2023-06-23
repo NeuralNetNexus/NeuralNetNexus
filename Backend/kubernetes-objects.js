@@ -1,45 +1,53 @@
-const train_suppervisorObject = {
+// kubernetes-objects.js
+
+const trainSuppervisorObject = {
     apiVersion: 'batch/v1',
     kind: 'Job',
     metadata: {
-        name: 'train_suppervisor'
+      name: 'train-suppervisor',
     },
     spec: {
-        affinity: {
-            nodeAffinity: {
-                preferredDuringSchedulingIgnoredDuringExecution: {
-                    nodeSelectorTerms: [
-                        {
-                            matchExpressions: [
-                                {
-                                    key: 'train_suppervisor',
-                                    operator: 'In',
-                                    values: ['yes']
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        },
-        template: {
-            spec: {
-                containers: [
-                    {
-                        name: 'trainsuppervisor',
-                        image: 'rafaelxokito/neuralnetnexustrain_suppervisor:latest'
-                    }
+      affinity: {
+        nodeAffinity: {
+          preferredDuringSchedulingIgnoredDuringExecution: [
+            {
+              weight: 1,
+              preference: {
+                matchExpressions: [
+                  {
+                    key: 'train-suppervisor',
+                    operator: 'In',
+                    values: ['yes'],
+                  },
                 ],
-                restartPolicy: 'Never'
-            }
+              },
+            },
+          ],
         },
-        backoffLimit: 4,
-        nodeSelector: {
-            'kubernetes.io/role': 'helper'
-        }
-    }
-};
-
-module.exports = {
-    train_suppervisorObject: train_suppervisorObject
-};
+      },
+      template: {
+        spec: {
+          containers: [
+            {
+              name: 'trainsuppervisor',
+              image: 'rafaelxokito/neuralnetnexustrain_suppervisor:latest',
+            },
+          ],
+          restartPolicy: 'Never',
+        },
+      },
+      backoffLimit: 4,
+      nodeSelector: {
+        'kubernetes.io/role': 'helper',
+      },
+    },
+  };
+  
+  module.exports = {
+    getTrainSupervisorObject: function (projectId) {
+      // Customize and return the Kubernetes Job manifest based on the projectId
+      // In this example, we are using the same object for all projects
+      return trainSuppervisorObject;
+    },
+  };
+  

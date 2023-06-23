@@ -211,10 +211,8 @@ app.post("/api/upload", upload.single("dataset"), async (req, res, next) => {
     console.log(projectInfo)
 
     const project = new Project(projectInfo);
-    console.log("ola4")
     const savedProject = await project.save();
     const projectId = savedProject._id;
-    console.log("ola5")
 
     // Rename the ZIP file with modified name format
     const modifiedFileName = `pvc-dataset-${projectId}${fileExtension}`;
@@ -231,15 +229,23 @@ app.post("/api/upload", upload.single("dataset"), async (req, res, next) => {
       message: 'ZIP file received'
     });
 
-    console.log("ola6")
     // TODO - Trigger the train-suppervisor job here
-    /*k8sApi.createNamespacedJob('default', k8sObjects.train_suppervisorObject)
+    const jobManifest = k8sObjects.getTrainSupervisorObject(projectId);
+    console.log(jobManifest)
+    k8sApi.createNamespacedJob('default', jobManifest)
       .then((response) => {
         console.log('Job created with response:', response.body);
+        res.status(200).json({
+          message: 'ZIP file received'
+        });
       })
       .catch((err) => {
         console.error('Error creating job:', err);
-      });*/
+        res.status(500).json({
+          error: 'UPLOAD_FAILED',
+          message: 'Error creating job'
+        });
+      });
 
       
   } catch (error) { 
