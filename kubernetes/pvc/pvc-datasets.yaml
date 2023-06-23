@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: databases-pvc
+  name: pvc-datasets
   namespace: backend
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: standard
+  volumeMode: Filesystem
   resources:
     requests:
       storage: 30Gi
