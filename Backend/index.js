@@ -28,8 +28,6 @@ var database_uri = process.env.MONGODB_CONNECTION || process.env.DATABASE_URI ||
 const MONGODB_URI = database_uri.startsWith("mongodb://")
   ? database_uri
   : `mongodb://${database_uri}:27017/neuralnetnexus`;
-
-  console.log(MONGODB_URI)
 mongoose
   .connect(MONGODB_URI, {
     useNewUrlParser: true,
@@ -44,25 +42,25 @@ app.use(
   })
 );
 
+const upload = multer({
+  dest: "/usr/app/datasets/",
+  limits: { fileSize: 200 * 1024 * 1024 }, // 200MB
+  fileFilter: function (req, file, cb) {
+    if (path.extname(file.originalname) == ".zip") {
+      // Allow the upload
+      cb(null, true);
+    } else {
+      // Reject the upload
+      cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Only .zip files are allowed!'));
+    }
+  }
+});
+
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(bodyParser.urlencoded({ limit: '200mb', extended: true, parameterLimit: 100000 }));
 app.use(express.json());
 
-const upload = multer({
-  dest: "/usr/app/datasets/",
-  limits: { fileSize: 200 * 1024 * 1024 }, //200MB
-  fileFilter: function (req, file, cb) {
-    console.log(path.extname(req.file.originalname))
-    if (path.extname(req.file.originalname) == ".zip") {
-      // Allow the upload
-      cb(null, true);
-    }
-    else {
-      // Reject the upload
-      cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Only one file allowed!'));
-    }
-  }
-});
+
 
 
 // GET endpoint that returns "Hello World!"
@@ -159,62 +157,44 @@ app.post(
 );
 
 // POST endpoint to handle the ZIP file upload
-app.post("/upload", (req, res, next) => {
-  upload.single("file")(req, res, function (err) {
-      if (err instanceof multer.MulterError) {
-        console.error("Multer error:", err);
-        return res.status(400).json({
-          error: 'UPLOAD_FAILED',
-          message: 'File upload failed'
-        });
-    } else if (err) {
-      console.error("Error:", err);
-      return res.status(500).json({
-        error: 'UPLOAD_FAILED',
-        message: 'Something went wrong'
-      });
-    }
-
-    // Proceed to the next middleware or route handler
-    next();
-  });
-}, async function (req, res, next) {
-  
+app.post("/api/upload", upload.single("dataset"), async (req, res, next) => {
   const { model, projectName } = req.body;
+
+  console.log(req.body)
+  console.log(req.file)
 
   // Check if a model was provided in the request
   if (!model) {
-    res.status(400).json({ 
+    return res.status(400).json({
       error: 'UPLOAD_FAILED',
       message: 'No model provided'
     });
-    return;
   }
+
   // Check if a file was sent in the request
   if (!req.file) {
-    res.status(400).json({ 
+    return res.status(400).json({
       error: 'UPLOAD_FAILED',
       message: 'No file uploaded'
     });
-    return;
   }
+
   const fileExtension = path.extname(req.file.originalname);
-  if (fileExtension != '.zip') {
-    res.status(400).json({ 
+  if (fileExtension !== '.zip') {
+    return res.status(400).json({
       error: 'UPLOAD_FAILED',
       message: 'Only ZIP file is allowed'
     });
-    return; // Add return statement here
   }
-  // Check if a file was sent in the request
+
+  // Check if a project name was given
   if (!projectName) {
-    res.status(400).json({ 
+    return res.status(400).json({
       error: 'UPLOAD_FAILED',
       message: 'No project name was given'
     });
-    return;
   }
-  // Save the uploaded ZIP file internally
+
   const zipFilePath = req.file.path;
 
   try {
@@ -242,24 +222,28 @@ app.post("/upload", (req, res, next) => {
         console.log('New dataset saved as:', modifiedFileName);
       }
     });
-    res.status(200).json({ 
+
+    res.status(200).json({
       message: 'ZIP file received'
     });
 
     // TODO - Trigger the train-suppervisor job here
-    k8sApi.createNamespacedJob('default', k8sObjects.train_suppervisorObject).then((response) => {
-      console.log('Job created with response:', response.body);
-    }).catch((err) => {
+    k8sApi.createNamespacedJob('default', k8sObjects.train_suppervisorObject)
+      .then((response) => {
+        console.log('Job created with response:', response.body);
+      })
+      .catch((err) => {
         console.error('Error creating job:', err);
-    });
+      });
   } catch (error) {
     console.error('Error saving file information to MongoDB:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'UPLOAD_FAILED',
       message: 'Error saving file information'
     });
   }
 });
+
 
 // Start the server
 app.listen(PORT, () => {

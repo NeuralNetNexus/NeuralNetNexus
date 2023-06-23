@@ -26,20 +26,26 @@ const ProjectPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
+        
         const formData = new FormData();
+        formData.append('text', "ola");
         formData.append('projectName', projectName);
         formData.append('network', selectedNet);
         formData.append('dataset', dataset);
-
+          
+        console.log(dataset)
         try {
-            const response = await axios.post('/api/upload', formData);
+            const response = await axios.post('http://localhost:3001/api/upload', formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            });
             console.log(response.data);
-        } catch (err) {
+          } catch (err) {
             console.error(err);
-        } finally {
+          } finally {
             setLoading(false);
-        }
+          }
     };
 
     return (

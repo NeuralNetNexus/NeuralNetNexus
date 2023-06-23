@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend-service
-  namespace: frontend
+  namespace: platform
 spec:
   type: ClusterIP
   selector:

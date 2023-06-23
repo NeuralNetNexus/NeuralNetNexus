@@ -35,7 +35,7 @@ const train_suppervisorObject = {
         },
         backoffLimit: 4,
         nodeSelector: {
-            'kubernetes.io/role': 'auxilliar'
+            'kubernetes.io/role': 'helper'
         }
     }
 };

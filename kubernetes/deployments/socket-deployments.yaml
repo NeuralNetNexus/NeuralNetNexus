@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: socket-deployment
-  namespace: backend
+  namespace: platform
 spec:
   selector:
     matchLabels:
