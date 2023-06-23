@@ -6,6 +6,7 @@ RUN npm install --silent
 
 # Stage 2: Build the React app
 FROM node:16-alpine as build
+WORKDIR /app
 COPY --from=install /app/node_modules ./node_modules
 COPY . ./
 RUN npm run build
