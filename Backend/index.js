@@ -11,16 +11,16 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const bodyParser = require("body-parser");
 const k8s = require('@kubernetes/client-node');
+// Models
+const User = require("./models.user");
+const Project = require("./models.project");
+// Kubernetes
 const k8sObjects = require('./kubernetes-objects');
 
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
 
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
-
-// Models
-const User = require("./models/user");
-const Project = require("./models/project");
 
 const PORT = process.env.PORT || 3001;
 
