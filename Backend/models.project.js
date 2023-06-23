@@ -22,6 +22,18 @@ const myModelSchema = new Schema({
     type: String,
     required: true,
   },
+  n_splits: {
+    type: Number,
+    required: false
+  },
+  aggregated_accuracy: {
+    type: Number,
+    required: false
+  },
+  accuracies: {
+    type: [Number],
+    required: false
+  }
 }, {
   timestamps: true,
 });
