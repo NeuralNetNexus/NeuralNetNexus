@@ -159,6 +159,7 @@ app.post(
 // POST endpoint to handle the ZIP file upload
 app.post("/upload", (req, res, next) => {
   upload.single("file")(req, res, function (err) {
+    console.log("ola")
     if (err instanceof multer.MulterError) {
       if (err.code === "LIMIT_UNEXPECTED_FILE") {
         // Handle the unexpected file error
