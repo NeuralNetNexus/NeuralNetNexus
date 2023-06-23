@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongo-statefulset
+  namespace: neuralnetnexus
   labels:
     app: mongodb
 spec:
@@ -14,6 +15,7 @@ spec:
       labels:
         app: mongodb
     spec:
+      hostNetwork: true
       containers:
         - name: mongodb
           image: mongo:latest
