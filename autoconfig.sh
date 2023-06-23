@@ -13,13 +13,6 @@ microk8s kubectl apply -f kubernetes/roles
 #microk8s kubectl label nodes raspberrypitwo kubernetes.io/role=helper
 #microk8s kubectl label nodes fedora kubernetes.io/role=platform
 
-# Create namespaces
-microk8s kubectl create namespace platform
-microk8s kubectl create namespace split
-microk8s kubectl create namespace train-supervisor
-microk8s kubectl create namespace train
-microk8s kubectl create namespace aggregator
-
 # Create objects
 microk8s kubectl apply -f kubernetes/configmaps/*
 microk8s kubectl apply -f kubernetes/pvc
