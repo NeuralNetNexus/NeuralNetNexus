@@ -321,7 +321,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
     // TODO - Trigger the train-suppervisor job here
     const jobManifest = k8sObjects.getTrainSupervisorObject(projectId);
     console.log(jobManifest)
-    k8sApi.createNamespacedJob('default', jobManifest)
+    k8sApi.createNamespacedJob('neuralnetnexus', jobManifest)
       .then((response) => {
         console.log('Job created with response:', response.body);
         res.status(200).json({

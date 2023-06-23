@@ -1,36 +1,18 @@
 // kubernetes-objects.js
 
 const getTrainSupervisorObject = function (projectId) {
-    const trainSuppervisorObject = {
+    const trainSupervisorObject = {
       apiVersion: 'batch/v1',
       kind: 'Job',
       metadata: {
-        name: 'train-suppervisor',
+        name: 'train-supervisor',
       },
       spec: {
-        affinity: {
-          nodeAffinity: {
-            preferredDuringSchedulingIgnoredDuringExecution: [
-              {
-                weight: 1,
-                preference: {
-                  matchExpressions: [
-                    {
-                      key: 'train-suppervisor',
-                      operator: 'In',
-                      values: ['yes'],
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
         template: {
           spec: {
             containers: [
               {
-                name: 'trainsuppervisor',
+                name: 'trainsupervisor',
                 image: 'rafaelxokito/neuralnetnexustrain_suppervisor:latest',
                 env: [
                   {
@@ -63,8 +45,7 @@ const getTrainSupervisorObject = function (projectId) {
         },
       },
     };
-  
-    return trainSuppervisorObject;
+    return trainSupervisorObject;
   };
   
   module.exports = {
