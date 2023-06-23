@@ -160,10 +160,6 @@ app.post(
 app.post("/upload", (req, res, next) => {
   upload.single("file")(req, res, function (err) {
     if (err instanceof multer.MulterError) {
-      if (err.code === "LIMIT_UNEXPECTED_FILE") {
-        // Handle the unexpected file error
-        return res.status(400).json({ error: 'UPLOAD_FAILED', message: "Only one file allowed" });
-      }
       // Handle other multer errors if needed
     } else if (err) {
       // Handle other errors if needed
