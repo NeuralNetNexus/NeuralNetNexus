@@ -21,6 +21,7 @@ const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 // Models
 const User = require("./models/user");
 const Project = require("./models/project");
+const { debug } = require("console");
 
 const PORT = process.env.PORT || 3001;
 
@@ -160,8 +161,8 @@ app.post(
 app.post("/api/upload", upload.single("dataset"), async (req, res, next) => {
   const { model, projectName } = req.body;
 
-  console.log(req.body)
-  console.log(req.file)
+  console.log("ola")
+  console.log(model)
 
   // Check if a model was provided in the request
   if (!model) {
@@ -195,6 +196,7 @@ app.post("/api/upload", upload.single("dataset"), async (req, res, next) => {
     });
   }
 
+
   const zipFilePath = req.file.path;
 
   try {
@@ -206,11 +208,13 @@ app.post("/api/upload", upload.single("dataset"), async (req, res, next) => {
       state: 'pending',
       name: projectName
     };
+    console.log(projectInfo)
 
     const project = new Project(projectInfo);
-
+    console.log("ola4")
     const savedProject = await project.save();
     const projectId = savedProject._id;
+    console.log("ola5")
 
     // Rename the ZIP file with modified name format
     const modifiedFileName = `pvc-dataset-${projectId}${fileExtension}`;
@@ -227,15 +231,19 @@ app.post("/api/upload", upload.single("dataset"), async (req, res, next) => {
       message: 'ZIP file received'
     });
 
+    console.log("ola6")
     // TODO - Trigger the train-suppervisor job here
-    k8sApi.createNamespacedJob('default', k8sObjects.train_suppervisorObject)
+    /*k8sApi.createNamespacedJob('default', k8sObjects.train_suppervisorObject)
       .then((response) => {
         console.log('Job created with response:', response.body);
       })
       .catch((err) => {
         console.error('Error creating job:', err);
-      });
-  } catch (error) {
+      });*/
+
+      
+  } catch (error) { 
+    console.log("adeus")
     console.error('Error saving file information to MongoDB:', error);
     res.status(500).json({
       error: 'UPLOAD_FAILED',

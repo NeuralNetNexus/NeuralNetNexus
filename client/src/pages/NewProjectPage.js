@@ -30,7 +30,7 @@ const ProjectPage = () => {
         const formData = new FormData();
         formData.append('text', "ola");
         formData.append('projectName', projectName);
-        formData.append('network', selectedNet);
+        formData.append('model', selectedNet);
         formData.append('dataset', dataset);
           
         console.log(dataset)
