@@ -20,6 +20,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3001
+        volumeMounts:
+          - name: datasets-data
+            mountPath: /usr/app/datasets
+          - name: models-data
+            mountPath: /usr/app/models
         env:
         - name: MONGODB_CONNECTION
           valueFrom:
@@ -28,4 +33,10 @@ spec:
               key: MONGODB_CONNECTIONSTRING
       nodeSelector:
         kubernetes.io/role: platform
-        
+      volumes:
+        - name: datasets-data
+          persistentVolumeClaim:
+            claimName: pvc-datasets
+        - name: models-data
+          persistentVolumeClaim:
+            claimName: pvc-models

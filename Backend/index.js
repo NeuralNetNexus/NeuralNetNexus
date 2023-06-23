@@ -49,9 +49,10 @@ app.use(bodyParser.urlencoded({ limit: '200mb', extended: true, parameterLimit: 
 app.use(express.json());
 
 const upload = multer({
-  dest: "datasets/",
+  dest: "/usr/app/datasets/",
   limits: { fileSize: 200 * 1024 * 1024 }, //200MB
   fileFilter: function (req, file, cb) {
+    console.log(path.extname(req.file.originalname))
     if (path.extname(req.file.originalname) == ".zip") {
       // Allow the upload
       cb(null, true);
