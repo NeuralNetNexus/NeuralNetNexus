@@ -24,11 +24,12 @@ const Project = require("./models/project");
 
 const PORT = process.env.PORT || 3001;
 
-var database_uri = process.env.MONGODB_CONNECTION || "localhost";
+var database_uri = process.env.MONGODB_CONNECTION || process.env.DATABASE_URI || "localhost";
 const MONGODB_URI = database_uri.startsWith("mongodb://")
   ? database_uri
   : `mongodb://${database_uri}:27017/neuralnetnexus`;
 
+  console.log(MONGODB_URI)
 mongoose
   .connect(MONGODB_URI, {
     useNewUrlParser: true,
@@ -159,11 +160,18 @@ app.post(
 // POST endpoint to handle the ZIP file upload
 app.post("/upload", (req, res, next) => {
   upload.single("file")(req, res, function (err) {
-    console.log("ola")
-    if (err instanceof multer.MulterError) {
-      // Handle other multer errors if needed
+      if (err instanceof multer.MulterError) {
+        console.error("Multer error:", err);
+        return res.status(400).json({
+          error: 'UPLOAD_FAILED',
+          message: 'File upload failed'
+        });
     } else if (err) {
-      // Handle other errors if needed
+      console.error("Error:", err);
+      return res.status(500).json({
+        error: 'UPLOAD_FAILED',
+        message: 'Something went wrong'
+      });
     }
 
     // Proceed to the next middleware or route handler
