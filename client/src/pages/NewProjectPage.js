@@ -2,6 +2,8 @@ import { Helmet } from 'react-helmet-async';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Container, Typography, Box, Select, MenuItem, InputLabel, Button, FormControl, TextField, LinearProgress } from '@mui/material';
+import io from 'socket.io-client';
+const socket = io("ws://localhost:3002");
 
 const ProjectPage = () => {
     const [projectName, setProjectName] = useState('');
@@ -34,12 +36,13 @@ const ProjectPage = () => {
           
         console.log(dataset)
         try {
-            const response = await axios.post('/api/upload', formData, {
+            const response = await axios.post('http://localhost:3001/upload', formData, {
               headers: {
                 'Content-Type': 'multipart/form-data',
               },
             });
             console.log(response.data);
+            socket.emit('joinProject', response.data.projectId);
           } catch (err) {
             console.error(err);
           } finally {

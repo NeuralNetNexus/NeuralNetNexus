@@ -1,31 +1,77 @@
 import os
 import zipfile
-from pathlib import Path
+import shutil
+import glob
 
-def split_zip(file_path, dest_dir, parts):
-    # Ensure the destination directory exists
-    Path(dest_dir).mkdir(parents=True, exist_ok=True)
+def unzip_folder(zip_path, extract_path):
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_path)
 
-    # Open the zip file
-    with zipfile.ZipFile(file_path, 'r') as zip_ref:
-        # Get the list of files in the zip
-        file_list = zip_ref.namelist()
+def count_images(folder_path):
+    image_files = glob.glob(os.path.join(folder_path, '**/*.jpg'), recursive=True)
+    image_files += glob.glob(os.path.join(folder_path, '**/*.jpeg'), recursive=True)
+    image_files += glob.glob(os.path.join(folder_path, '**/*.png'), recursive=True)
+    image_files += glob.glob(os.path.join(folder_path, '**/*.gif'), recursive=True)
+    image_files += glob.glob(os.path.join(folder_path, '**/*.bmp'), recursive=True)
+    
+    return len(image_files)
 
-        # Calculate the number of files per part
-        files_per_part = len(file_list) // parts
+def split_zip(pvc_path, project_id):
+    # CONSTANTS
+    file_path = f"{pvc_path}/{project_id}.zip"
 
-        # Split the files into parts
-        for i in range(parts):
-            part_file_list = file_list[i*files_per_part:(i+1)*files_per_part]
-            # Create a new zip file for each part
-            with zipfile.ZipFile(f"{dest_dir}/part{i+1}.zip", 'w') as part_zip:
-                # Add the files from the part file list to the new zip
-                for file in part_file_list:
-                    part_zip.writestr(file, zip_ref.read(file))
+    # Unzip the folder
+    dataset_path = os.path.join(pvc_path, project_id)
+    unzip_folder(file_path, dataset_path)
+
+    # Train and Test Paths
+    train_path = os.path.join(dataset_path, "training")
+    train_path = train_path if os.path.exists(train_path) else os.path.join(dataset_path, "train")
+    test_path = os.path.join(dataset_path, "testing")
+    test_path = test_path if os.path.exists(test_path) else os.path.join(dataset_path, "test")
+
+    shutil.copytree(test_path, os.path.join(pvc_path, f"{project_id}_test"))
+
+    # Calculate the ratio and split size based on total images
+    total_images = count_images(train_path)
+    ratio = max(1, total_images // 10000)
+
+    # Get the list of classes
+    class_list = os.listdir(train_path)
+
+    # Iterate over each class
+    for class_name in class_list:
+        class_path = os.path.join(train_path, class_name)
+        
+        # Get the list of images in the class folder
+        images_list = os.listdir(class_path)
+        total_images = len(images_list)
+
+        split_size = max(1, total_images // ratio)
+        
+        # Create a new dataset folder for each split
+        for split_num in range(1, ratio + 1):
+
+            # Create a new directory
+            split_dir = os.path.join(pvc_path, f"{project_id}_{split_num}/{class_name}")
+            os.makedirs(split_dir, exist_ok=True)
+            
+            # Determine the range of images for the current split
+            start_index = (split_num - 1) * split_size
+            end_index = split_num * split_size
+            
+            # Move the corresponding images to the split dataset folder
+            for i in range(start_index, end_index):
+                if i < total_images:
+                    image_name = images_list[i]
+                    image_path = os.path.join(class_path, image_name)
+                    shutil.copy(image_path, split_dir)
+
+    shutil.rmtree(dataset_path)
+
 
 if __name__ == '__main__':
-    file_path = "/app/datasets/"+os.getenv('DATASET_NAME')
-    dest_dir =  "/app/datasets"
-    parts = int(os.getenv('PARTS'))
+    project_id = os.getenv('PROJECT_ID')
+    pvc_path = "/app/datasets/"
 
-    split_zip(file_path, dest_dir, parts) 
+    split_zip(pvc_path, project_id)

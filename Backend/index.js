@@ -65,6 +65,117 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+// GET - retrieve project
+app.get("/projects/:id", 
+async (req, res) => {
+  const id = req.params.id;
+  try{
+    const project = await Project.findOne({_id: id});
+    res.json({ project: project});
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'GET_PROJECT_FAILED',
+      message: 'Error when retrieving project'
+    });
+  }
+});
+
+// GET - retrieve project
+app.get("/projects", 
+async (req, res) => {
+  try{
+    const projects= await Project.find();
+    res.json({ projects: projects});
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'GET_PROJECTS_FAILED',
+      message: 'Error when retrieving projects'
+    });
+  }
+});
+
+// PUT - update project's number of splits
+app.put("/projects/:id/splits", [
+  check("splits")
+  .notEmpty().withMessage("Number of splits is required")
+  .isFloat({ gt: 0 }).withMessage("Number of splits must be greater than 0")],
+async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
+  }
+  const id = req.params.id;
+  const {splits} = req.body;
+  try{
+    const project = await Project.findOne({_id: id});
+    project.n_splits = splits
+    await project.save()
+    res.json({ project: project});
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'PUT_PROJECT_FAILED',
+      message: 'Error when updating project'
+    });
+  }
+});
+
+// PUT - update project's accuracies 
+app.put("/projects/:id/accuracies", [
+  check("accuracies")
+      .notEmpty().withMessage("Accuracies are required")
+      .isArray().withMessage("Accuracies must be a float array")
+      .custom((value) => {
+        for (const num of value) {
+          if (typeof num !== "number" || num < 0 || num > 100) {
+            throw new Error("Accuracy must be between 0 and 100");
+          }
+        }
+        return true;
+      })
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
+  }
+  const id = req.params.id;
+  const { accuracies } = req.body;
+  try {
+    const project = await Project.findOne({ _id: id });
+    project.accuracies = project.accuracies.concat(accuracies);
+    await project.save();
+    res.json({ project: project });
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'PUT_PROJECT_FAILED',
+      message: 'Error when updating project'
+    });
+  }
+});
+
+// PUT - update project's aggregated accuracy
+app.put("/projects/:id/aggregated_accuracy", [
+  check("aggregated_accuracy")
+  .notEmpty().withMessage("Aggregated accuracy is required")
+  .isFloat({ min: 0, max: 100 }).withMessage("Aggregated accuracy must be between 0 and 100")],
+  async (req, res) => {
+  const id = req.params.id;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
+  }
+  const {aggregated_accuracy} = req.body;
+  try{
+    const project = await Project.findOne({_id: id});
+    project.aggregated_accuracy = aggregated_accuracy
+    await project.save()
+    res.json({ project: project});
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'PUT_PROJECT_FAILED',
+      message: 'Error when updating project'
+    });
+  }
+});
 // POST - Register a user
 app.post(
   "/register",
@@ -219,9 +330,10 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
     });
 
     res.status(200).json({
-      message: 'ZIP file received for project: ' + projectId 
+      message: 'ZIP file received',
+      projectId: projectId
     });
-
+/*
     // TODO - Trigger the train-suppervisor job here
     const jobManifest = k8sObjects.getTrainSupervisorObject(projectId, model);
     console.log(jobManifest)
@@ -229,7 +341,8 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
       .then((response) => {
         console.log('Job created with response:', response.body);
         res.status(200).json({
-          message: 'ZIP file received for project: ' + projectId 
+          message: 'ZIP file received',
+          projectId: projectId
         });
       })
       .catch((err) => {
@@ -239,7 +352,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
           message: 'Error creating job'
         });
       });
-
+*/
   } catch (error) { 
     console.error('Error saving file information to MongoDB:', error);
     res.status(500).json({
