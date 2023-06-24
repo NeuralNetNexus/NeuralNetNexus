@@ -92,10 +92,16 @@ for i, dataset in enumerate(dataset_collection):
         test_data_size = len(dataset_test_obj)
     
         # Models
-        model_collection = [
-            models.SqueezeNet(num_classes=num_classes, num_channels=dataset_channels),
-        ]
-
+        neuralnet = os.getenv('MODELS')
+        if neuralnet == "SqueezeNet":
+            model_collection = [models.SqueezeNet(num_classes=num_classes, num_channels=dataset_channels)]
+        elif neuralnet == "ResNet18":
+            model_collection = [models.ResNet(num_classes=num_classes, num_channels=dataset_channels)]
+        elif neuralnet == "VGG16":
+            model_collection = [models.VGG(num_classes=num_classes, num_channels=dataset_channels)]
+        elif neuralnet == "EfficientNet V2S":
+            model_collection = [models.EfficientNet(num_classes=num_classes, num_channels=dataset_channels),]    
+                
         for k, model in enumerate(model_collection):
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
