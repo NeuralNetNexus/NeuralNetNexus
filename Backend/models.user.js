@@ -6,5 +6,5 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ['client', 'admin'], required: true },
     name: { type: String, required: false, unique: false },    
 }, { timestamps: { createdAt: true, updatedAt: false } });
-
+ 
 module.exports = mongoose.model('User', userSchema);
