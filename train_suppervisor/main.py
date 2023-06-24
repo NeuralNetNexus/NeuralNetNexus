@@ -1,11 +1,13 @@
 from os import getenv
 from time import sleep
+import requests
 
 import yaml
 
 from kubernetes import client, config
 
 project_id = getenv('PROJECT_ID')
+model = getenv('MODEL')
 
 def create_volume_mounts(job_type):
     volume_mounts = []
@@ -51,6 +53,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
     if completions and parallelism:
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
+            completion_mode="Indexed",
             completions=completions,
             parallelism=parallelism,
             template=template,
@@ -111,18 +114,18 @@ def main():
 
     train_job_name = f"train-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexustrain:latest"
-    n_batches = env_vars["PARTS"]
+    n_splits = requests.api.get(f"http://backend-service/projects/{project_id}").json()["project"]["n_splits"]
 
-    train_job = create_job_object(train_job_name, image_name, completions=n_batches, parallelism=n_batches)
+    env_vars = {"PROJECT_ID": project_id, "MODEL": model}
+    train_job = create_job_object(train_job_name, image_name, env_vars, completions=n_splits, parallelism=n_splits)
     create_job(batch_v1, train_job)
     get_job_status(batch_v1, train_job_name)
-
 
     # =================  Aggregator Job  ================= #
 
     aggregator_job_name = f"aggregator-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
-    aggregator_job = create_job_object(aggregator_job_name, image_name)
+    aggregator_job = create_job_object(aggregator_job_name, image_name, env_vars)
     create_job(batch_v1, aggregator_job)
     get_job_status(batch_v1, aggregator_job_name)
 
