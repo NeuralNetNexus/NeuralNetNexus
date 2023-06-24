@@ -11,6 +11,7 @@ import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import ProjectPage from './pages/ProjectPage';
 import NewProjectPage from './pages/NewProjectPage';
+import ProjectDetails from './pages/ProjectDetails';
 
 // ----------------------------------------------------------------------
 
@@ -27,6 +28,7 @@ export default function Router() {
         { path: 'blog', element: <BlogPage /> },
         { path: 'project', element: <ProjectPage /> },
         { path: 'newproject', element: <NewProjectPage /> },
+        { path: 'projects/:id', element: <ProjectDetails/> },
       ],
     },
     {
