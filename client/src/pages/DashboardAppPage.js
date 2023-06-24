@@ -2,10 +2,13 @@ import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
 
 // @mui
 import { useTheme } from '@mui/material/styles';
-import { Grid, Container, Typography } from '@mui/material';
+import { Box, Grid, Container, Typography } from '@mui/material';
 // components
 import Iconify from '../components/iconify';
 // sections
@@ -32,6 +35,12 @@ export default function DashboardAppPage() {
   const [accuracy, setAccuracy] = useState(0);
   const [loss, setLoss] = useState(0);
   const [epoch, setEpoch] = useState("0");
+  const [expanded, setExpanded] = useState(false);
+  
+  const handleChange = (panel) => (event, isExpanded) => {
+    setExpanded(isExpanded ? panel : false);
+  };
+  
 
   useEffect(() => {
     fetchData();
@@ -82,6 +91,80 @@ export default function DashboardAppPage() {
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary title="Accuracies" text={accuracies} color="error" icon={'ant-design:bug-filled'} />
           </Grid>
+
+          <Grid item xs={12} sm={12} md={12}>
+            <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+              <AccordionSummary
+                expandIcon={'ant-design:bug-filled'}
+                aria-controls="panel1bh-content"
+                id="panel1bh-header"
+              >
+                <Typography sx={{ width: '100%', flexShrink: 0 }}>
+                  Train_pod_name1
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={4}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <AppWidgetSummary title="Model Size" text={modelSize.toString()} icon={'ant-design:android-filled'} />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={3}>
+                    <AppWidgetSummary title="Model Size" text={modelSize.toString()} icon={'ant-design:android-filled'} />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={3}>
+                    <AppWidgetSummary title="Model Size" text={modelSize.toString()} icon={'ant-design:android-filled'} />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={3}>
+                    <AppWidgetSummary title="Model Size" text={modelSize.toString()} icon={'ant-design:android-filled'} />
+                  </Grid>
+                  
+
+                </Grid>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6} lg={6}>
+                    <AppWebsiteVisits
+                      title="Accuracy"
+                      chartLabels={epoch}
+                      chartData={[
+                        {
+                          name: 'Accuracy',
+                          type: 'area',
+                          fill: 'gradient',
+                          data: accuracy,
+                        },
+                      ]}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6}>
+                    <AppWebsiteVisits
+                      title="Loss"
+                      chartLabels={epoch}
+                      chartData={[
+                        {
+                          name: 'Loss',
+                          type: 'area',
+                          fill: 'gradient',
+                          data: loss,
+                        },
+                      ]}
+                      colors={['red']}
+                    />
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+          </Grid>
+
+
+
+
+
+
+
+
 
           <Grid item xs={12} md={6} lg={6}>
             <AppWebsiteVisits
