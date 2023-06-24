@@ -4,7 +4,7 @@ metadata:
   name: socket-ingress
   annotations:
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/websocket-services: "socketserver"
+    nginx.ingress.kubernetes.io/websocket-services: "socket-service"
 spec:
   rules:
   - http:
@@ -13,6 +13,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: socketserver
+            name: socket-service
             port:
               number: 80
