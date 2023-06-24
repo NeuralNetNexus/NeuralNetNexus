@@ -83,8 +83,7 @@ def get_job_status(api_instance, job_name):
         api_response = api_instance.read_namespaced_job_status(
             name=job_name,
             namespace="default")
-        if api_response.status.succeeded is not None or \
-                api_response.status.failed is not None:
+        if api_response.status.succeeded is not None:
             job_completed = True
         sleep(1)
         print("Job status='%s'" % str(api_response.status))
@@ -102,15 +101,11 @@ def main():
 
     split_job_name = f"split-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexussplit:latest"
-    zip_name = f'{project_id}.zip'
-    env_vars = {"PARTS": 5, "DATASET_NAME": zip_name}
+    env_vars = {"PROJECT_ID": project_id}
 
     split_job = create_job_object(split_job_name, image_name, env_vars)
-    
-    print(split_job)
     create_job(batch_v1, split_job)
     get_job_status(batch_v1, split_job_name)
-
 
     # =================  Training Jobs  ================= #
 
@@ -126,7 +121,7 @@ def main():
     # =================  Aggregator Job  ================= #
 
     aggregator_job_name = f"aggregator-job-{project_id}"
-    image_name = "rafaelxokito/neuralnetnexusagregator:latest"
+    image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
     aggregator_job = create_job_object(aggregator_job_name, image_name)
     create_job(batch_v1, aggregator_job)
     get_job_status(batch_v1, aggregator_job_name)
