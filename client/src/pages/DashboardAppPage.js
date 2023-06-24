@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
+import { useParams } from 'react-router-dom';
 
 // @mui
 import { useTheme } from '@mui/material/styles';
@@ -27,6 +28,7 @@ import {
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
+  const { id } = useParams();
   const theme = useTheme();
   const [modelSize, setModelSize] = useState("0");
   const [currentState, setCurrentState] = useState(false);
