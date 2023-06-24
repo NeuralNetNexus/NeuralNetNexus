@@ -12,7 +12,7 @@ def connect():
     print("Connected to server")
     sio.emit('joinProject', project_id)
     
-sio.connect('ws://socket-server')
+sio.connect('ws://socket-service')
 
 def unzip_folder(zip_path, extract_path):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
