@@ -21,23 +21,9 @@ const getTrainSupervisorObject = function (projectId) {
                     value: projectId,
                   },
                 ],
-                volumeMounts: [
-                  {
-                    name: 'datasets-data',
-                    mountPath: '/usr/app/datasets',
-                  },
-                ],
               },
             ],
             restartPolicy: 'Never',
-            volumes: [
-              {
-                name: 'datasets-data',
-                persistentVolumeClaim: {
-                  claimName: 'pvc-datasets',
-                },
-              },
-            ],
           },
         },
         backoffLimit: 4,

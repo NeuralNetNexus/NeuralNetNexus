@@ -42,6 +42,9 @@ app.use(
   })
 );
 
+app.use(bodyParser.json({ limit: '100mb' }));
+app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
+
 const upload = multer({
   dest: "/usr/app/datasets/",
   limits: { fileSize: 200 * 1024 * 1024 }, // 200MB
