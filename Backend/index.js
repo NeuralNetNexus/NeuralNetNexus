@@ -20,7 +20,7 @@ const k8sObjects = require('./kubernetes-objects');
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
 
-const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+const k8sApi = kc.makeApiClient(k8s.BatchV1Api);
 
 const PORT = process.env.PORT || 3001;
 
@@ -292,7 +292,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
     // Define the properties for the new Project instance
     const projectInfo = {
       dataset: req.file.originalname,
-      size: req.file.size / (1024 * 1024 * 1024), // Convert bytes to GB
+      size: req.file.size / (1024 * 1024), // Convert bytes to MB
       model,
       state: 'pending',
       name: projectName
