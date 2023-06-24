@@ -2,6 +2,7 @@ import os
 import zipfile
 import shutil
 import glob
+import requests
 
 def unzip_folder(zip_path, extract_path):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -35,6 +36,16 @@ def split_zip(pvc_path, project_id):
     # Calculate the ratio and split size based on total images
     total_images = count_images(train_path)
     ratio = max(1, total_images // 10000)
+
+    try:
+        data = {
+            'splits': ratio
+        }
+        requests.put(f"http://backend-service/projects/{project_id}/splits", json=data)
+
+    except:
+        print("Error sending the number of splits to the backend-service")
+
 
     # Get the list of classes
     class_list = os.listdir(train_path)
