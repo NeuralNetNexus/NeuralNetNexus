@@ -319,7 +319,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
     });
 
     // TODO - Trigger the train-suppervisor job here
-    const jobManifest = k8sObjects.getTrainSupervisorObject(projectId);
+    const jobManifest = k8sObjects.getTrainSupervisorObject(projectId, model);
     console.log(jobManifest)
     k8sApi.createNamespacedJob('default', jobManifest)
       .then((response) => {

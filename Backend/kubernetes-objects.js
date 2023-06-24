@@ -1,6 +1,6 @@
 // kubernetes-objects.js
 
-const getTrainSupervisorObject = function (projectId) {
+const getTrainSupervisorObject = function (projectId, model) {
     const trainSupervisorObject = {
       apiVersion: 'batch/v1',
       kind: 'Job',
@@ -19,6 +19,10 @@ const getTrainSupervisorObject = function (projectId) {
                   {
                     name: 'PROJECT_ID',
                     value: projectId,
+                  },
+                  {
+                    name: 'MODEL',
+                    value: model,
                   },
                 ],
               },
