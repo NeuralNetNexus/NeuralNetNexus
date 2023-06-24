@@ -36,6 +36,11 @@ export default function DashboardAppPage() {
   const [loss, setLoss] = useState(0);
   const [epoch, setEpoch] = useState("0");
   const [expanded, setExpanded] = useState(false);
+  const [items, setItems] = useState({});
+  const [jsonArray, setItemData] = useState([]);
+
+  //const items = ['Item 1', 'Item 2', 'Item 3', 'Item 4'];
+
   
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
@@ -46,8 +51,8 @@ export default function DashboardAppPage() {
     fetchData();
   }, []);
 
-  const fetchData = () => {
-    axios.get('http://localhost:3001/modelSize')
+  const fetchData = async () => {
+    await axios.get('http://localhost:3001/modelSize')
       .then(response => {
         const values = response.data;
         setModelSize(values.modelSize);
@@ -57,6 +62,10 @@ export default function DashboardAppPage() {
         setAccuracy(values.accuracy)
         setLoss(values.loss)
         setEpoch(values.epoch)
+        setItems(values)
+        jsonArray.push(values)
+        console.log(jsonArray[0])
+        setItemData(jsonArray)
       })
       .catch(error => {
         console.error(error);
@@ -70,7 +79,7 @@ export default function DashboardAppPage() {
       </Helmet>
 
       <Container maxWidth="xl">
-        <Typography variant="h4" sx={{ mb: 5 }}>
+        <Typography variant="h2" sx={{ mb: 5 }}>
           Neural Net Nexus
         </Typography>
 
@@ -92,110 +101,75 @@ export default function DashboardAppPage() {
             <AppWidgetSummary title="Accuracies" text={accuracies} color="error" icon={'ant-design:bug-filled'} />
           </Grid>
 
-          <Grid item xs={12} sm={12} md={12}>
-            <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
-              <AccordionSummary
-                expandIcon={'ant-design:bug-filled'}
-                aria-controls="panel1bh-content"
-                id="panel1bh-header"
-              >
-                <Typography sx={{ width: '100%', flexShrink: 0 }}>
-                  Train_pod_name1
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Grid container spacing={4}>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <AppWidgetSummary title="Model Size" text={modelSize.toString()} icon={'ant-design:android-filled'} />
+          <Typography variant="h4" sx={{ mb: 5 }}>
+            Training Pods
+          </Typography>
+
+          {jsonArray.map((item, index) => (
+            <Grid item xs={12} sm={12} md={12} key={index}>
+              <Accordion expanded={expanded === `panel${index}`} onChange={handleChange(`panel${index}`)}>
+                <AccordionSummary
+                  expandIcon={"↑"}
+                  aria-controls={`panel${index}bh-content`}
+                  id={`panel${index}bh-header`}
+                >
+                  <Typography sx={{ width: '100%', flexShrink: 0 }}>
+                    Train_pod_name1
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={4}>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} icon={'ant-design:android-filled'} />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={3}>
+                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} icon={'ant-design:android-filled'} />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={3}>
+                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} icon={'ant-design:android-filled'} />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={3}>
+                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} icon={'ant-design:android-filled'} />
+                    </Grid>
                   </Grid>
-
-                  <Grid item xs={12} sm={6} md={3}>
-                    <AppWidgetSummary title="Model Size" text={modelSize.toString()} icon={'ant-design:android-filled'} />
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6} lg={6}>
+                      <AppWebsiteVisits
+                        title="Accuracy"
+                        chartLabels={item.epoch}
+                        chartData={[
+                          {
+                            name: 'Accuracy',
+                            type: 'area',
+                            fill: 'gradient',
+                            data: item.accuracy,
+                          },
+                        ]}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6} lg={6}>
+                      <AppWebsiteVisits
+                        title="Loss"
+                        chartLabels={item.epoch}
+                        chartData={[
+                          {
+                            name: 'Loss',
+                            type: 'area',
+                            fill: 'gradient',
+                            data: item.loss,
+                          },
+                        ]}
+                        colors={['red']}
+                      />
+                    </Grid>
                   </Grid>
-
-                  <Grid item xs={12} sm={6} md={3}>
-                    <AppWidgetSummary title="Model Size" text={modelSize.toString()} icon={'ant-design:android-filled'} />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={3}>
-                    <AppWidgetSummary title="Model Size" text={modelSize.toString()} icon={'ant-design:android-filled'} />
-                  </Grid>
-                  
-
-                </Grid>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6} lg={6}>
-                    <AppWebsiteVisits
-                      title="Accuracy"
-                      chartLabels={epoch}
-                      chartData={[
-                        {
-                          name: 'Accuracy',
-                          type: 'area',
-                          fill: 'gradient',
-                          data: accuracy,
-                        },
-                      ]}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6} lg={6}>
-                    <AppWebsiteVisits
-                      title="Loss"
-                      chartLabels={epoch}
-                      chartData={[
-                        {
-                          name: 'Loss',
-                          type: 'area',
-                          fill: 'gradient',
-                          data: loss,
-                        },
-                      ]}
-                      colors={['red']}
-                    />
-                  </Grid>
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
-          </Grid>
-
-
-
-
-
-
-
-
-
-          <Grid item xs={12} md={6} lg={6}>
-            <AppWebsiteVisits
-              title="Accuracy"
-              chartLabels={epoch}
-              chartData={[
-                {
-                  name: 'Accuracy',
-                  type: 'area',
-                  fill: 'gradient',
-                  data: accuracy,
-                },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={6}>
-            <AppWebsiteVisits
-              title="Loss"
-              chartLabels={epoch}
-              chartData={[
-                {
-                  name: 'Loss',
-                  type: 'area',
-                  fill: 'gradient',
-                  data: loss,
-                },
-              ]}
-              colors={['red']}
-            />
-          </Grid>
+                </AccordionDetails>
+              </Accordion>
+            </Grid>
+          ))}
 
           <Grid item xs={12} md={6} lg={4}>
             <AppCurrentVisits
