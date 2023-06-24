@@ -11,60 +11,64 @@ import os
 import copy
 from PIL import Image
 import models
+import random
+from torch.utils.data import random_split
+import shutil
+
 
 def pil_loader(path):
     return Image.open(path).convert('RGB')
 
-def compute_metrics(confusion_matrix):
-    true_positives = np.diag(confusion_matrix)
-    false_positives = np.sum(confusion_matrix, axis=0) - true_positives
-    false_negatives = np.sum(confusion_matrix, axis=1) - true_positives
-
-    precision = true_positives / (true_positives + false_positives + 1e-10)
-    recall = true_positives / (true_positives + false_negatives + 1e-10)
-    f1_score = 2 * precision * recall / (precision + recall + 1e-10)
-
-    return precision.mean(), recall.mean(), f1_score.mean()
-
 # Datasets
 dataset_collection = [
-    { "path": "./DatasetHalf", "channels": 3 },
+    { "path": "./training", "channels": 3 },
 ]
 
-image_transforms = {
-    "train": transforms.Compose([
-        transforms.Resize((228, 228)),
-        transforms.RandomCrop(size=224),
-        transforms.ToTensor(),
-    ]),
-    "valid": transforms.Compose([
-        transforms.Resize((228, 228)),
-        transforms.RandomCrop(size=224),
-        transforms.ToTensor(),
-    ]),
-    "test": transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-    ])
-}
+image_transforms = [
+    transforms.Resize((228, 228)),
+    transforms.RandomCrop(size=224),
+    transforms.ToTensor(),
+]
 
 for i, dataset in enumerate(dataset_collection):
+    
     dataset_path = dataset["path"]
     dataset_channels = dataset["channels"]
+    
+    dataset_obj = datasets.ImageFolder(root=dataset_path, transform=transforms.Compose(image_transforms), loader=lambda path: pil_loader(path))
 
-    dataset_train_path = os.path.join(dataset_path, 'train')
-    dataset_test_path = os.path.join(dataset_path, 'test')
-    dataset_valid_path = os.path.join(dataset_path, 'valid')
+    train_path = os.path.join(dataset_path, 'train')
+    val_path = os.path.join(dataset_path, 'val')
 
-    # Normalized Dataset
-    dataset_train_obj = datasets.ImageFolder(root=dataset_train_path, transform=image_transforms["train"], loader=lambda path: pil_loader(path))
-    dataset_val_obj = datasets.ImageFolder(root=dataset_valid_path, transform=image_transforms["valid"], loader=lambda path: pil_loader(path))
-    dataset_test_obj = datasets.ImageFolder(root=dataset_test_path, transform=image_transforms["test"], loader=lambda path: pil_loader(path))
+    # Create the train and validation folders if they don't exist
+    os.makedirs(train_path, exist_ok=True)
+    os.makedirs(val_path, exist_ok=True)
 
-    # kf = KFold(n_splits=5, shuffle=True)
+    # Get the class-to-index mapping from the dataset object
+    class_to_idx = dataset_obj.class_to_idx
+
+    # Create class folders in the train and validation folders
+    for class_name in class_to_idx.keys():
+        class_train_path = os.path.join(train_path, class_name)
+        class_val_path = os.path.join(val_path, class_name)
+        os.makedirs(class_train_path, exist_ok=True)
+        os.makedirs(class_val_path, exist_ok=True)
+
+    # Move the images to the train and validation class folders
+    for image_path, class_index in dataset_obj.imgs:
+        class_name = dataset_obj.classes[class_index]
+        if random.random() < 0.8:  # 80% for training, adjust the split ratio as needed
+            destination_path = os.path.join(train_path, class_name, os.path.basename(image_path))
+        else:
+            destination_path = os.path.join(val_path, class_name, os.path.basename(image_path))
+        shutil.move(image_path, destination_path)
+
+    # Create the train and validation datasets
+    train_dataset = datasets.ImageFolder(root=train_path, transform=transforms.Compose(image_transforms), loader=lambda path: pil_loader(path))
+    val_dataset = datasets.ImageFolder(root=val_path, transform=transforms.Compose(image_transforms), loader=lambda path: pil_loader(path))
 
     # Get a mapping of the indices to the class names, in order to see the output classes of the test images.
-    idx_to_class = {v: k for k, v in dataset_train_obj.class_to_idx.items()}
+    idx_to_class = {v: k for k, v in dataset_obj.class_to_idx.items()}
 
     num_classes = len(idx_to_class)
 
@@ -79,15 +83,13 @@ for i, dataset in enumerate(dataset_collection):
     # Grid search
     for j, hp in enumerate(hps_iter):
 
-        train_loader = DataLoader(dataset_train_obj, batch_size=hp["batch_size"], shuffle=True)
-        val_loader = DataLoader(dataset_val_obj, batch_size=hp["batch_size"], shuffle=True)
-        test_loader = DataLoader(dataset_test_obj, batch_size=hp["batch_size"], shuffle=True)
+        train_loader = DataLoader(train_dataset, batch_size=hp["batch_size"], shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=hp["batch_size"], shuffle=True)
 
-        train_data_size = len(dataset_train_obj)
+        train_data_size = len(train_loader)
         print(train_data_size)
-        valid_data_size = len(dataset_val_obj)
+        valid_data_size = len(val_loader)
         print(valid_data_size)
-        test_data_size = len(dataset_test_obj)
     
         # Models
         neuralnet = os.getenv('MODELS')
@@ -100,6 +102,9 @@ for i, dataset in enumerate(dataset_collection):
         elif neuralnet == "EfficientNet V2S":
             model_collection = [models.EfficientNet(num_classes=num_classes, num_channels=dataset_channels),]    
                 
+
+        model_collection = [models.SqueezeNet(num_classes=num_classes, num_channels=dataset_channels)]
+
         for k, model in enumerate(model_collection):
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -274,80 +279,3 @@ for i, dataset in enumerate(dataset_collection):
             test_loss = 0.0
 
             confusion_matrix = torch.zeros(num_classes, num_classes)
-
-            print("==========  TEST  ==========")
-            with open(os.path.join(history_path, 'test.log'), 'a+') as the_file:
-                the_file.write('==========  TEST  ==========\n')
-
-            # Validation - No gradient tracking needed
-            with torch.no_grad():
-
-                # Set to evaluation mode
-                model_ft.eval()
-
-                # Validation loop
-                for inputs, labels in test_loader:
-                    inputs = inputs.to(device)
-                    labels = labels.to(device)
-
-                    # Forward pass - compute outputs on input data using the model
-                    outputs = model_ft(inputs)
-
-                    # Compute loss
-                    loss = criterion(outputs, labels)
-
-                    # Compute the total loss for the batch and add it to valid_loss
-                    test_loss += loss.item() * inputs.size(0)
-
-                    # Calculate validation accuracy
-                    ret, predictions = torch.max(outputs.data, 1)
-                    correct_counts = predictions.eq(labels.data.view_as(predictions))
-
-                    for t, p in zip(labels.view(-1), predictions.view(-1)):
-                        confusion_matrix[t.long(), p.long()] += 1
-
-                    # Convert correct_counts to float and then compute the mean
-                    acc = torch.mean(correct_counts.type(torch.FloatTensor))
-
-                    # Compute total accuracy in the whole batch and add to valid_acc
-                    test_acc += acc.item() * inputs.size(0)
-            
-            cm = confusion_matrix.cpu().numpy()
-            plt.imshow(cm, cmap='gray_r')
-            plt.colorbar()
-            
-            for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-                plt.text(j, i, "{:.0f}".format(cm[i, j]), horizontalalignment="center", color="white" if cm[i, j] > (cm.max() / 1.5) else "black")
-
-            tick_marks = np.arange(len(confusion_matrix))
-            plt.xticks(tick_marks, idx_to_class.values(), rotation=45)
-            plt.yticks(tick_marks, idx_to_class.values())
-            
-            plt.tight_layout()
-            plt.xlabel("Predicted")
-            plt.ylabel("Actual")
-            plt.savefig(os.path.join(history_path, 'confusion_matrix.png'), bbox_inches="tight")
-            
-            plt.clf()
-            
-            avg_test_loss = test_loss/test_data_size 
-            avg_test_acc = test_acc/test_data_size
-            
-            precision, recall, f1_score = compute_metrics(cm)
-            
-            indiv_acc = (confusion_matrix.diag()/confusion_matrix.sum(1)).numpy()
-            
-            print("Test: Loss - {:.4f}, Accuracy - {:.2f}%, Precision - {:.2f}%, Recall - {:.2f}%, F1-Score - {:.2f}%".format(avg_test_loss, avg_test_acc*100, precision*100, recall*100, f1_score*100))
-            print("Test Per Class:")
-            
-            for key in idx_to_class:
-                print(f"{idx_to_class[key]} - {round(indiv_acc[key] * 100, 2)}%")
-                
-            print()
-
-            with open(os.path.join(history_path, 'test.log'), 'a+') as the_file:
-                the_file.write("Test: Loss - {:.4f}, Accuracy - {:.2f}%, Precision - {:.2f}%, Recall - {:.2f}%, F1-Score - {:.2f}%\n\n".format(avg_test_loss, avg_test_acc*100, precision*100, recall*100, f1_score*100))
-                the_file.write('==========  TEST PER CLASS  ==========\n')
-                
-                for key in idx_to_class:
-                    the_file.write(f"{idx_to_class[key]} - {round(indiv_acc[key] * 100, 2)}%\n")
