@@ -4,4 +4,4 @@ metadata:
   name: mongodb-configmap
 data:
   # property-like keys; each key maps to a simple value
-  MONGODB_CONNECTIONSTRING: "mongodb://root:root@mongo-service.neuralnetnexus.svc.cluster.local"
+  MONGODB_CONNECTIONSTRING: "mongodb://root:root@mongo-service.default.svc.cluster.local"
