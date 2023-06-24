@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader
 import torch.optim as optim
 from torchvision import transforms, datasets
 import matplotlib.pyplot as plt
@@ -11,8 +11,6 @@ import os
 import copy
 from PIL import Image
 import models
-from sklearn.model_selection import KFold
-
 
 def pil_loader(path):
     return Image.open(path).convert('RGB')
