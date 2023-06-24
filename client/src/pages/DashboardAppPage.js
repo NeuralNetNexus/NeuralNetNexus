@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
+import { useParams } from 'react-router-dom';
 
 // @mui
 import { useTheme } from '@mui/material/styles';
@@ -27,6 +28,7 @@ import {
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
+  const { id } = useParams();
   const theme = useTheme();
   const [modelSize, setModelSize] = useState("0");
   const [currentState, setCurrentState] = useState(false);
@@ -86,7 +88,7 @@ export default function DashboardAppPage() {
         <Grid container spacing={3}>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="" text={currentState ? 'Active' : 'Inactive'} color={currentState ? 'success' : 'error'} icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="Status" text={currentState ? 'Active' : 'Inactive'} color={currentState ? 'success' : 'error'} icon={'ant-design:apple-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -101,7 +103,7 @@ export default function DashboardAppPage() {
             <AppWidgetSummary title="Accuracies" text={accuracies} color="error" icon={'ant-design:bug-filled'} />
           </Grid>
 
-          <Typography variant="h4" sx={{ mb: 5 }}>
+          <Typography variant="h4" sx={{ mb: 1, paddingTop: "50px", paddingLeft: "30px"}}>
             Training Pods
           </Typography>
 
@@ -124,19 +126,19 @@ export default function DashboardAppPage() {
                     </Grid>
 
                     <Grid item xs={12} sm={6} md={3}>
-                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} icon={'ant-design:android-filled'} />
+                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} color="success" icon={'ant-design:android-filled'} />
                     </Grid>
 
                     <Grid item xs={12} sm={6} md={3}>
-                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} icon={'ant-design:android-filled'} />
+                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} color="warning" icon={'ant-design:android-filled'} />
                     </Grid>
 
                     <Grid item xs={12} sm={6} md={3}>
-                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} icon={'ant-design:android-filled'} />
+                      <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} color="error" icon={'ant-design:android-filled'} />
                     </Grid>
                   </Grid>
-                  <Grid container spacing={4}>
-                    <Grid item xs={12} md={3} lg={3}>
+                  <Grid container spacing={4} sx={{ paddingBottom: '16px', paddingTop: '16px'}}>
+                    <Grid item xs={12} md={6} lg={6}>
                       <AppWebsiteVisits 
                         title="Accuracy"
                         chartLabels={item.epoch}
@@ -148,10 +150,10 @@ export default function DashboardAppPage() {
                             data: item.accuracy,
                           },
                         ]}
-                        height={300}
+                        height={150}
                       />
                     </Grid>
-                    <Grid item xs={12} md={3} lg={3}>
+                    <Grid item xs={12} md={6} lg={6}>
                       <AppWebsiteVisits
                         title="Loss"
                         chartLabels={item.epoch}
@@ -164,11 +166,14 @@ export default function DashboardAppPage() {
                           },
                         ]}
                         colors={['red']}
+                        height={150}
                       />
                     </Grid>
-                    <Grid item xs={12} md={3} lg={3}>
+                  </Grid>
+                  <Grid container spacing={4} >
+                    <Grid item xs={12} md={6} lg={6}>
                       <AppWebsiteVisits
-                        title="Loss"
+                        title="Não sei"
                         chartLabels={item.epoch}
                         chartData={[
                           {
@@ -178,12 +183,13 @@ export default function DashboardAppPage() {
                             data: item.loss,
                           },
                         ]}
-                        colors={['red']}
+                        colors={['orange']}
+                        height={150}
                       />
                     </Grid>
-                    <Grid item xs={12} md={3} lg={3}>
+                    <Grid item xs={12} md={6} lg={6}>
                       <AppWebsiteVisits
-                        title="Loss"
+                        title="ueee"
                         chartLabels={item.epoch}
                         chartData={[
                           {
@@ -193,7 +199,8 @@ export default function DashboardAppPage() {
                             data: item.loss,
                           },
                         ]}
-                        colors={['red']}
+                        colors={['green']}
+                        height={150}
                       />
                     </Grid>
                   </Grid>
