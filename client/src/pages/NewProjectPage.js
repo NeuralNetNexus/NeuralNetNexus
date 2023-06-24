@@ -1,11 +1,13 @@
 import { Helmet } from 'react-helmet-async';
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Select, MenuItem, InputLabel, Button, FormControl, TextField, LinearProgress } from '@mui/material';
 import io from 'socket.io-client';
 const socket = io("ws://localhost:3002");
 
 const ProjectPage = () => {
+    const navigate = useNavigate();
     const [projectName, setProjectName] = useState('');
     const [selectedNet, setSelectedNet] = useState('');
     const [dataset, setDataset] = useState(null);
@@ -42,7 +44,9 @@ const ProjectPage = () => {
               },
             });
             console.log(response.data);
-            socket.emit('joinProject', response.data.projectId);
+            const id = response.data.projectId
+            socket.emit('joinProject', id);
+            navigate(`/dashboard/projects/${id}`);
           } catch (err) {
             console.error(err);
           } finally {
