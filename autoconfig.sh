@@ -12,7 +12,6 @@ microk8s kubectl apply -f kubernetes/roles
 #microk8s kubectl label nodes neuralnetnexus-desktop kubernetes.io/role=computing
 #microk8s kubectl label nodes raspberrypitwo kubernetes.io/role=helper
 #microk8s kubectl label nodes fedora kubernetes.io/role=platform
-microk8s kubectl create namespace neuralnetnexus
 
 # Create objects
 microk8s kubectl apply -f kubernetes/configmaps/*
