@@ -50,7 +50,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
     # Define the job's spec
     if completions and parallelism:
         spec = client.V1JobSpec(
-            ttlSecondsAfterFinished=10,
+            ttl_seconds_after_finished=10,
             completions=completions,
             parallelism=parallelism,
             template=template,
@@ -58,7 +58,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
         )
     else:
         spec = client.V1JobSpec(
-            ttlSecondsAfterFinished=10,
+            ttl_seconds_after_finished=10,
             template=template,
             backoff_limit=4,
         )

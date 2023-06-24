@@ -24,7 +24,7 @@ def split_zip(file_path, dest_dir, parts):
                     part_zip.writestr(file, zip_ref.read(file))
 
 if __name__ == '__main__':
-    file_path = "/app/datasets/dataset.zip"
+    file_path = "/app/datasets/"+os.getenv('DATASET_NAME')
     dest_dir =  "/app/datasets"
     parts = int(os.getenv('PARTS'))
 
