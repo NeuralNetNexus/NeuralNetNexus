@@ -5,7 +5,7 @@ const getTrainSupervisorObject = function (projectId) {
       apiVersion: 'batch/v1',
       kind: 'Job',
       metadata: {
-        name: 'train-supervisor',
+        name: `train-supervisor-${projectId}`,
       },
       spec: {
         ttlSecondsAfterFinished: 10,
