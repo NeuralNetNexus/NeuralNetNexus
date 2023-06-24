@@ -1,0 +1,7 @@
+==========  TEST  ==========
+Test: Loss - 2.3204, Accuracy - 53.05%, Precision - 42.68%, Recall - 58.01%, F1-Score - 42.96%
+
+==========  TEST PER CLASS  ==========
+PEP161 - 74.03%
+PEP241 - 0.0%
+PEP282 - 100.0%

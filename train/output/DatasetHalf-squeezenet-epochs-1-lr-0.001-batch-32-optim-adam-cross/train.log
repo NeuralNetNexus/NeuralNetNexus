@@ -1,0 +1,21 @@
+==========  TRAIN  ==========
+Epoch 1:
+	Training: Loss - 32.7400, Accuracy - 41.67%
+	Validation: Loss - 0.4625, Accuracy - 77.92%
+	Time: 233.3527s
+==========  TRAIN  ==========
+==========  TRAIN  ==========
+Epoch 1:
+	Training: Loss - 41.7002, Accuracy - 34.82%
+	Validation: Loss - 1.0381, Accuracy - 65.21%
+	Time: 264.0257s
+
+Best Model from Epoch 1
+
+==========  TRAIN  ==========
+==========  TRAIN  ==========
+==========  TRAIN  ==========
+==========  TRAIN  ==========
+==========  TRAIN  ==========
+==========  TRAIN  ==========
+==========  TRAIN  ==========
