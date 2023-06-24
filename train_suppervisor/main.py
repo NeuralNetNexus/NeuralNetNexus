@@ -7,20 +7,30 @@ from kubernetes import client, config
 
 project_id = getenv('PROJECT_ID')
 
-def create_job_object(job_name, image_name, pvc_name=None, mount_path=None, env_vars=None, completions=None, parallelism=None):
+def create_volume_mounts(job_type):
+    volume_mounts = []
+
+    volume_mounts.append(client.V1VolumeMount(mount_path="/usr/app/datasets", name='datasets-data'))
+    volumes.append(client.V1Volume(name='datasets-data', persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-datasets")))
+
+    if job_type == "split":
+        return volume_mounts
+
+    volume_mounts.append(client.V1VolumeMount(mount_path="/usr/app/models", name='models-data'))
+    volumes.append(client.V1Volume(name='models-data', persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-models")))
+
+
+def create_job_object(job_name, image_name, env_vars=None, completions=None, parallelism=None):
     # Construct the environment variables for the container
     env = []
     if env_vars is not None:
         for name, value in env_vars.items():
             env.append(client.V1EnvVar(name=name, value=str(value)))
 
-    # Prepare the VolumeMount and Volume for the container and pod respectively if a PVC is provided
-    volume_mounts = []
-    volumes = []
-    if pvc_name and mount_path:
-        volume_mounts.append(client.V1VolumeMount(mount_path=mount_path, name='volume'))
-        volumes.append(client.V1Volume(name='volume', persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name=pvc_name)))
-
+    # Define PVC(s) to mount
+    job_type = job_name.split("-")[0]
+    volume_mounts = create_volume_mounts(job_type)
+    
     # Define the job's container
     container = client.V1Container(
         name=job_name,
@@ -38,6 +48,7 @@ def create_job_object(job_name, image_name, pvc_name=None, mount_path=None, env_
     # Define the job's spec
     if completions and parallelism:
         spec = client.V1JobSpec(
+            ttlSecondsAfterFinished=10,
             completions=completions,
             parallelism=parallelism,
             template=template,
@@ -45,6 +56,7 @@ def create_job_object(job_name, image_name, pvc_name=None, mount_path=None, env_
         )
     else:
         spec = client.V1JobSpec(
+            ttlSecondsAfterFinished=10,
             template=template,
             backoff_limit=4,
         )
@@ -60,9 +72,7 @@ def create_job_object(job_name, image_name, pvc_name=None, mount_path=None, env_
     return job
 
 def create_job(api_instance, job):
-    api_response = api_instance.create_namespaced_job(
-        body=job,
-        namespace="default")
+    api_response = api_instance.create_namespaced_job(body=job, namespace="default")
     print("Job created. status='%s'" % str(api_response.status))
 
 def get_job_status(api_instance, job_name):
@@ -86,27 +96,36 @@ def main():
     
     # {1} -> é o ID do projeto
 
-    # Split Job
+    # =================  Split Job  ================= #
+
     split_job_name = f"split-job-{project_id}"
-    env_vars = {"PARTS": 5}
-    pvc_name = f'pvc-dataset-${project_id}.zip'
-    split_job = create_job_object(split_job_name, "rafaelxokito/neuralnetnexussplit:latest", pvc_name, "/app/database", env_vars)
+    image_name = "rafaelxokito/neuralnetnexussplit:latest"
+    zip_name = f'pvc-dataset-${project_id}.zip'
+    env_vars = {"PARTS": 5, "DATASET_NAME": zip_name}
+
+    split_job = create_job_object(split_job_name, image_name, env_vars)
+    
     print(split_job)
     create_job(batch_v1, split_job)
     get_job_status(batch_v1, split_job_name)
 
-    # TODO -> Ir buscar o número de batches do 'split' job e definir o número de 
-    # completions e parallelism para o número de batches
 
-    # Training Jobs
+    # =================  Training Jobs  ================= #
+
     train_job_name = f"train-job-{project_id}"
-    train_job = create_job_object(train_job_name, "rafaelxokito/neuralnetnexustrain:latest", completions=env_vars["PARTS"], parallelism=env_vars["PARTS"])
+    image_name = "rafaelxokito/neuralnetnexustrain:latest"
+    n_batches = env_vars["PARTS"]
+
+    train_job = create_job_object(train_job_name, image_name, completions=n_batches, parallelism=n_batches)
     create_job(batch_v1, train_job)
     get_job_status(batch_v1, train_job_name)
 
-    # Aggregator Job
+
+    # =================  Aggregator Job  ================= #
+
     aggregator_job_name = f"aggregator-job-{project_id}"
-    aggregator_job = create_job_object(aggregator_job_name, "rafaelxokito/neuralnetnexusagregator:latest")
+    image_name = "rafaelxokito/neuralnetnexusagregator:latest"
+    aggregator_job = create_job_object(aggregator_job_name, image_name)
     create_job(batch_v1, aggregator_job)
     get_job_status(batch_v1, aggregator_job_name)
 
