@@ -108,7 +108,7 @@ def main():
     
     # {1} -> é o ID do projeto
 
-    sio.connect('ws://socket-server')
+    sio.connect('ws://socket-service')
 
     # =================  Split Job  ================= #
 
