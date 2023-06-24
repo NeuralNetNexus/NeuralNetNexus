@@ -34,7 +34,7 @@ const ProjectPage = () => {
           
         console.log(dataset)
         try {
-            const response = await axios.post('/api/upload', formData, {
+            const response = await axios.post('SERVER_URI/api/upload', formData, {
               headers: {
                 'Content-Type': 'multipart/form-data',
               },
