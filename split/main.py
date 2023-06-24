@@ -3,6 +3,16 @@ import zipfile
 import shutil
 import glob
 import requests
+import socketio
+
+sio = socketio.Client()
+
+@sio.event
+def connect():
+    print("Connected to server")
+    sio.emit('joinProject', project_id)
+    
+sio.connect('ws://socket-server')
 
 def unzip_folder(zip_path, extract_path):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -42,6 +52,7 @@ def split_zip(pvc_path, project_id):
             'splits': ratio
         }
         requests.put(f"http://backend-service/projects/{project_id}/splits", json=data)
+        sio.emit('projectStatus', project_id, { "n_batch": ratio})
 
     except:
         print("Error sending the number of splits to the backend-service")
