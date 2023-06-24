@@ -5,8 +5,7 @@ import yaml
 
 from kubernetes import client, config
 
-project_id = getenv('project_id')
-pvc_name = getenv('pvc_name')
+project_id = getenv('PROJECT_ID')
 
 def create_job_object(job_name, image_name, pvc_name=None, mount_path=None, env_vars=None, completions=None, parallelism=None):
     # Construct the environment variables for the container
@@ -90,7 +89,9 @@ def main():
     # Split Job
     split_job_name = f"split-job-{project_id}"
     env_vars = {"PARTS": 5}
+    pvc_name = f'pvc-dataset-${project_id}.zip'
     split_job = create_job_object(split_job_name, "rafaelxokito/neuralnetnexussplit:latest", pvc_name, "/app/database", env_vars)
+    print(split_job)
     create_job(batch_v1, split_job)
     get_job_status(batch_v1, split_job_name)
 
