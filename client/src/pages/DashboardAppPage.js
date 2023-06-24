@@ -86,7 +86,7 @@ export default function DashboardAppPage() {
         <Grid container spacing={3}>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="" text={currentState ? 'Active' : 'Inactive'} color={currentState ? 'success' : 'error'} icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="Status" text={currentState ? 'Active' : 'Inactive'} color={currentState ? 'success' : 'error'} icon={'ant-design:apple-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -101,7 +101,7 @@ export default function DashboardAppPage() {
             <AppWidgetSummary title="Accuracies" text={accuracies} color="error" icon={'ant-design:bug-filled'} />
           </Grid>
 
-          <Typography variant="h4" sx={{ mb: 5 }}>
+          <Typography variant="h4" sx={{ mb: 1, paddingTop: "50px", paddingLeft: "30px"}}>
             Training Pods
           </Typography>
 
