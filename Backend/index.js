@@ -333,7 +333,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
       message: 'ZIP file received',
       projectId: projectId
     });
-/*
+
     // TODO - Trigger the train-suppervisor job here
     const jobManifest = k8sObjects.getTrainSupervisorObject(projectId, model);
     console.log(jobManifest)
@@ -352,7 +352,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
           message: 'Error creating job'
         });
       });
-*/
+
   } catch (error) { 
     console.error('Error saving file information to MongoDB:', error);
     res.status(500).json({
