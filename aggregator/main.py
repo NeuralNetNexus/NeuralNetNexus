@@ -15,8 +15,10 @@ def train(model_dir, model_name):
         model = models.vgg16(pretrained=False) # create a vgg16 model architecture        
     elif model_name == 'ResNet18':
         model = models.resnet18(pretrained=False)
-    elif model_name == 'EfficiencyNet V2':
+    elif model_name == 'EfficientNet V2S':
         model = models.efficientnet_v2_s(pretrained=False)
+    elif model_name == 'SqueezeNet':
+        model = models.squeezenet1_0(pretrained=False)
 
     params = model.state_dict()
 

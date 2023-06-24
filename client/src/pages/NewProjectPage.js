@@ -2,6 +2,8 @@ import { Helmet } from 'react-helmet-async';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Container, Typography, Box, Select, MenuItem, InputLabel, Button, FormControl, TextField, LinearProgress } from '@mui/material';
+import io from 'socket.io-client';
+const socket = io("ws://localhost:3002");
 
 const ProjectPage = () => {
     const [projectName, setProjectName] = useState('');
@@ -9,7 +11,7 @@ const ProjectPage = () => {
     const [dataset, setDataset] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const neuralNets = ['VGG-16', 'ResNet18', 'EfficiencyNet V2'];
+    const neuralNets = ['VGG-16', 'ResNet18', 'EfficientNet V2S', 'SqueezeNet'];
 
     const handleNetChange = (e) => {
         setSelectedNet(e.target.value);
@@ -34,12 +36,13 @@ const ProjectPage = () => {
           
         console.log(dataset)
         try {
-            const response = await axios.post('/api/upload', formData, {
+            const response = await axios.post('http://localhost:3001/upload', formData, {
               headers: {
                 'Content-Type': 'multipart/form-data',
               },
             });
             console.log(response.data);
+            socket.emit('joinProject', response.data.projectId);
           } catch (err) {
             console.error(err);
           } finally {
