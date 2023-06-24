@@ -14,24 +14,26 @@ AppWebsiteVisits.propTypes = {
   chartLabels: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
-export default function AppWebsiteVisits({ title, subheader, chartLabels, chartData, ...other }) {
+export default function AppWebsiteVisits({ title, subheader, chartLabels, chartData, colors, ...other }) {
   const chartOptions = useChart({
-    plotOptions: { bar: { columnWidth: '16%' } },
+    plotOptions: { bar: { columnWidth: '10%' } },
     fill: { type: chartData.map((i) => i.fill) },
     labels: chartLabels,
-    xaxis: { type: 'datetime' },
+    xaxis: { title: { text: 'Epoch'}, type: 'string' },
+    yaxis: { title: { text: title } },
     tooltip: {
       shared: true,
       intersect: false,
       y: {
         formatter: (y) => {
           if (typeof y !== 'undefined') {
-            return `${y.toFixed(0)} visits`;
+            return `${y*100} %`;
           }
           return y;
         },
       },
     },
+    colors: colors, // Update the colors property with the custom color palette
   });
 
   return (
@@ -44,3 +46,4 @@ export default function AppWebsiteVisits({ title, subheader, chartLabels, chartD
     </Card>
   );
 }
+

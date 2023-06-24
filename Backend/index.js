@@ -346,6 +346,23 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
 });
 
 
+
+//-----------------------------------DASHBOARD------------------------------------------------// 
+
+app.get('/modelSize', (req, res) => {
+  // Assuming the weekly sales value is hardcoded for demonstration purposes
+  const modelSize = 135;
+  const state = true
+  const n_splits = 10;
+  const accuracies = "70%";
+  const accuracy = [0.70, 0.50, 0.80, 0.20, 0.45];
+  const loss = [0.25, 0.67, 0.65, 0.98,  0.11]
+  const epoch = ["1", "2", "3", "4", "5"];
+
+  // Send the weekly sales value as a JSON response
+  res.json({ modelSize, state, n_splits, accuracies, accuracy, loss, epoch});
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log("Server is running on port " + PORT);
