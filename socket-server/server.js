@@ -28,7 +28,7 @@ io.on('connection', (socket) => {
   socket.on('splitNumber', (projectId, number) => {
     console.log('splitNumber', projectId, number);
     io.to(projectId).emit('receiveSplitNumber', number);
-  });
+  }); 
 
   // Several metrics related to a process from a related client
   socket.on('trainingMetrics', (projectId, metrics) => {
