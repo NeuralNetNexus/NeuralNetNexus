@@ -401,6 +401,31 @@ async (req, res) => {
   }
 });
 
+// PUT - update project's status
+app.put("/projects/:id/status", [
+  check("status")
+  .notEmpty().withMessage("Status is required")
+  .isString().withMessage("Status must be string")],
+async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
+  }
+  const id = req.params.id;
+  const {status} = req.body;
+  try{
+    const project = await Project.findOne({_id: id});
+    project.status = status
+    await project.save()
+    res.json({ project: project});
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'PUT_PROJECT_FAILED',
+      message: 'Error when updating project'
+    });
+  }
+});
+
 // PUT - update project's accuracies 
 app.put("/projects/:id/accuracies", [
   check("accuracies")
