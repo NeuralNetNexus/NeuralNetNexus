@@ -82,7 +82,7 @@ def main():
     # Configs can be set in Configuration class directly or using helper
     # utility. If no argument provided, the config will be loaded from
     # default location.
-    config.load_kube_config()
+    config.load_incluster_config()
     batch_v1 = client.BatchV1Api()
     
     # {1} -> é o ID do projeto
