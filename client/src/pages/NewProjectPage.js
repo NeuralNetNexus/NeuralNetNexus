@@ -9,7 +9,7 @@ const ProjectPage = () => {
     const [dataset, setDataset] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const neuralNets = ['VGG-16', 'ResNet18', 'EfficiencyNet V2'];
+    const neuralNets = ['VGG-16', 'ResNet18', 'EfficientNet V2S', 'SqueezeNet'];
 
     const handleNetChange = (e) => {
         setSelectedNet(e.target.value);
