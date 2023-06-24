@@ -135,9 +135,9 @@ export default function DashboardAppPage() {
                       <AppWidgetSummary title="Model Size" text={item.modelSize.toString()} icon={'ant-design:android-filled'} />
                     </Grid>
                   </Grid>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6} lg={6}>
-                      <AppWebsiteVisits
+                  <Grid container spacing={4}>
+                    <Grid item xs={12} md={3} lg={3}>
+                      <AppWebsiteVisits 
                         title="Accuracy"
                         chartLabels={item.epoch}
                         chartData={[
@@ -148,9 +148,40 @@ export default function DashboardAppPage() {
                             data: item.accuracy,
                           },
                         ]}
+                        height={300}
                       />
                     </Grid>
-                    <Grid item xs={12} md={6} lg={6}>
+                    <Grid item xs={12} md={3} lg={3}>
+                      <AppWebsiteVisits
+                        title="Loss"
+                        chartLabels={item.epoch}
+                        chartData={[
+                          {
+                            name: 'Loss',
+                            type: 'area',
+                            fill: 'gradient',
+                            data: item.loss,
+                          },
+                        ]}
+                        colors={['red']}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={3} lg={3}>
+                      <AppWebsiteVisits
+                        title="Loss"
+                        chartLabels={item.epoch}
+                        chartData={[
+                          {
+                            name: 'Loss',
+                            type: 'area',
+                            fill: 'gradient',
+                            data: item.loss,
+                          },
+                        ]}
+                        colors={['red']}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={3} lg={3}>
                       <AppWebsiteVisits
                         title="Loss"
                         chartLabels={item.epoch}

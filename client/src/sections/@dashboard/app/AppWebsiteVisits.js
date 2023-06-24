@@ -16,7 +16,7 @@ AppWebsiteVisits.propTypes = {
 
 export default function AppWebsiteVisits({ title, subheader, chartLabels, chartData, colors, ...other }) {
   const chartOptions = useChart({
-    plotOptions: { bar: { columnWidth: '10%' } },
+    plotOptions: { bar: { columnWidth: '5%' } },
     fill: { type: chartData.map((i) => i.fill) },
     labels: chartLabels,
     xaxis: { title: { text: 'Epoch'}, type: 'string' },
