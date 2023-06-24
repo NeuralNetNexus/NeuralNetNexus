@@ -86,9 +86,9 @@ for i, dataset in enumerate(dataset_collection):
         train_loader = DataLoader(train_dataset, batch_size=hp["batch_size"], shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=hp["batch_size"], shuffle=True)
 
-        train_data_size = len(train_loader)
+        train_data_size = len(train_dataset)
         print(train_data_size)
-        valid_data_size = len(val_loader)
+        valid_data_size = len(val_dataset)
         print(valid_data_size)
     
         # Models
@@ -96,7 +96,7 @@ for i, dataset in enumerate(dataset_collection):
         if neuralnet == "SqueezeNet":
             model_collection = [models.SqueezeNet(num_classes=num_classes, num_channels=dataset_channels)]
         elif neuralnet == "ResNet18":
-            model_collection = [models.ResNet(num_classes=num_classes, num_channels=dataset_channels)]
+            models.ResNet(resnet_version=18, num_classes=num_classes, num_channels=dataset_channels),
         elif neuralnet == "VGG16":
             model_collection = [models.VGG(num_classes=num_classes, num_channels=dataset_channels)]
         elif neuralnet == "EfficientNet V2S":
