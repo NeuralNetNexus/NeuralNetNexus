@@ -8,6 +8,7 @@ const getTrainSupervisorObject = function (projectId) {
         name: 'train-supervisor',
       },
       spec: {
+        ttlSecondsAfterFinished: 10,
         template: {
           spec: {
             containers: [
