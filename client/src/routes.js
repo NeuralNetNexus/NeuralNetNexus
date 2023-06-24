@@ -27,6 +27,7 @@ export default function Router() {
         { path: 'blog', element: <BlogPage /> },
         { path: 'project', element: <ProjectPage /> },
         { path: 'newproject', element: <NewProjectPage /> },
+        { path: 'projects/:id', element: <DashboardAppPage/> },
       ],
     },
     {

@@ -1,8 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 // @mui
 import {
   Card,
@@ -29,8 +30,6 @@ import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { ProjectListHead, ProjectListToolbar } from '../sections/@dashboard/project';
-// mock
-import PROJECTLIST from '../_mock/project';
 
 // ----------------------------------------------------------------------
 
@@ -90,9 +89,26 @@ export default function ProjectPage() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  const [projects, setProjects] = useState([]);
   
+  const [projects, setProjects] = useState([]); 
+  
+  useEffect(() => {
+    // Fetch projects when the component mounts
+    async function fetchProjects() {
+      try {
+        await axios.get("http://localhost:3001/projects").then(response => {
+          setProjects(response.data.projects);
+        })
+        .catch(error => {
+          console.error(error);
+        });        
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      }
+    }
+    fetchProjects();
+  }, []);
+
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
@@ -113,7 +129,7 @@ export default function ProjectPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = PROJECTLIST.map((n) => n.name);
+      const newSelecteds = projects.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -149,9 +165,9 @@ export default function ProjectPage() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - PROJECTLIST.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - projects.length) : 0;
 
-  const filteredProjects = applySortFilter(PROJECTLIST, getComparator(order, orderBy), filterName);
+  const filteredProjects = applySortFilter(projects, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredProjects.length && !!filterName;
 
@@ -181,7 +197,7 @@ export default function ProjectPage() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={PROJECTLIST.length}
+                  rowCount={projects.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
@@ -255,7 +271,7 @@ export default function ProjectPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={PROJECTLIST.length}
+            count={projects.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
