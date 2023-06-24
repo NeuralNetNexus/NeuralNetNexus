@@ -72,6 +72,6 @@ def split_zip(pvc_path, project_id):
 
 if __name__ == '__main__':
     project_id = os.getenv('PROJECT_ID')
-    pvc_path = "/usr/datasets/"
+    pvc_path = "/app/datasets/"
 
     split_zip(pvc_path, project_id)
