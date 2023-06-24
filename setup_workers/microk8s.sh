@@ -21,6 +21,7 @@ microk8s kubectl apply -f kubernetes/roles
 
 
 # Create namespaces
+microk8s kubectl create namespace neuralnetnexus
 microk8s kubectl create namespace frontend
 microk8s kubectl create namespace backend
 microk8s kubectl create namespace communication

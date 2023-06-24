@@ -13,7 +13,6 @@ spec:
       labels:
         app: backend
     spec:
-      hostNetwork: true
       containers:
       - name: backend
         image: docker.io/rafaelxokito/neuralnetnexusbackend:latest
