@@ -9,16 +9,18 @@ project_id = getenv('PROJECT_ID')
 
 def create_volume_mounts(job_type):
     volume_mounts = []
+    volumes = []
 
     volume_mounts.append(client.V1VolumeMount(mount_path="/usr/app/datasets", name='datasets-data'))
     volumes.append(client.V1Volume(name='datasets-data', persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-datasets")))
 
     if job_type == "split":
-        return volume_mounts
+        return volume_mounts, volumes
 
     volume_mounts.append(client.V1VolumeMount(mount_path="/usr/app/models", name='models-data'))
     volumes.append(client.V1Volume(name='models-data', persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-models")))
 
+    return volume_mounts, volumes
 
 def create_job_object(job_name, image_name, env_vars=None, completions=None, parallelism=None):
     # Construct the environment variables for the container
@@ -29,7 +31,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
 
     # Define PVC(s) to mount
     job_type = job_name.split("-")[0]
-    volume_mounts = create_volume_mounts(job_type)
+    volume_mounts, volumes = create_volume_mounts(job_type)
     
     # Define the job's container
     container = client.V1Container(
