@@ -102,7 +102,7 @@ def main():
 
     split_job_name = f"split-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexussplit:latest"
-    zip_name = f'pvc-dataset-${project_id}.zip'
+    zip_name = f'{project_id}.zip'
     env_vars = {"PARTS": 5, "DATASET_NAME": zip_name}
 
     split_job = create_job_object(split_job_name, image_name, env_vars)
