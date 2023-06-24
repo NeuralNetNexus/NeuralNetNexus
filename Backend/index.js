@@ -304,7 +304,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
     const projectId = savedProject._id;
 
     // Rename the ZIP file with modified name format
-    const modifiedFileName = `pvc-dataset-${projectId}${fileExtension}`;
+    const modifiedFileName = `${projectId}${fileExtension}`;
     const modifiedFilePath = path.join(req.file.destination, modifiedFileName);
     fs.rename(zipFilePath, modifiedFilePath, (error) => {
       if (error) {

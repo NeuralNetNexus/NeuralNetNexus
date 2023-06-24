@@ -5,7 +5,7 @@ const getTrainSupervisorObject = function (projectId) {
       apiVersion: 'batch/v1',
       kind: 'Job',
       metadata: {
-        name: 'train-supervisor',
+        name: `train-supervisor-${projectId}`,
       },
       spec: {
         ttlSecondsAfterFinished: 10,
@@ -21,23 +21,9 @@ const getTrainSupervisorObject = function (projectId) {
                     value: projectId,
                   },
                 ],
-                volumeMounts: [
-                  {
-                    name: 'datasets-data',
-                    mountPath: '/usr/app/datasets',
-                  },
-                ],
               },
             ],
             restartPolicy: 'Never',
-            volumes: [
-              {
-                name: 'datasets-data',
-                persistentVolumeClaim: {
-                  claimName: 'pvc-datasets',
-                },
-              },
-            ],
           },
         },
         backoffLimit: 4,
