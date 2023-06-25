@@ -49,11 +49,11 @@ def split_zip(pvc_path, project_id):
         data = {
             'splits': ratio
         }
-        requests.put(f"http://backend-service/projects/{project_id}/splits", json=data)
+        requests.patch(f"http://backend-service/projects/{project_id}/n-splits", json=data)
         sio.emit('projectStatus', { "n_batch": ratio})
 
     except:
-        print("Error sending the number of splits to the backend-service")
+        print("Error sending the number of splits to the backend-service or websocket")
 
 
     # Get the list of classes

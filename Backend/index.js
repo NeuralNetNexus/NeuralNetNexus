@@ -11,10 +11,7 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const bodyParser = require("body-parser");
 const k8s = require('@kubernetes/client-node');
-// Models
-const User = require("./models.user");
 const Project = require("./models.project");
-// Kubernetes
 const k8sObjects = require('./kubernetes-objects');
 
 const kc = new k8s.KubeConfig();
@@ -66,21 +63,6 @@ app.get("/", (req, res) => {
 });
 
 // GET - retrieve project
-app.get("/projects/:id", 
-async (req, res) => {
-  const id = req.params.id;
-  try{
-    const project = await Project.findOne({_id: id});
-    res.json({ project: project});
-  } catch (err) {
-    res.status(500).json({ 
-      error: 'GET_PROJECT_FAILED',
-      message: 'Error when retrieving project'
-    });
-  }
-});
-
-// GET - retrieve project
 app.get("/projects", 
 async (req, res) => {
   try{
@@ -94,175 +76,20 @@ async (req, res) => {
   }
 });
 
-// PUT - update project's number of splits
-app.put("/projects/:id/splits", [
-  check("splits")
-  .notEmpty().withMessage("Number of splits is required")
-  .isFloat({ gt: 0 }).withMessage("Number of splits must be greater than 0")],
+// GET - retrieve project
+app.get("/projects/:projectId",
 async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
-  }
-  const id = req.params.id;
-  const {splits} = req.body;
+  const { projectId } = req.params;
   try{
-    const project = await Project.findOne({_id: id});
-    project.n_splits = splits
-    await project.save()
+    const project = await Project.findOne({_id: projectId});
     res.json({ project: project});
   } catch (err) {
     res.status(500).json({ 
-      error: 'PUT_PROJECT_FAILED',
-      message: 'Error when updating project'
+      error: 'GET_PROJECT_FAILED',
+      message: 'Error when retrieving project'
     });
   }
 });
-
-// PUT - update project's accuracies 
-app.put("/projects/:id/accuracies", [
-  check("accuracies")
-      .notEmpty().withMessage("Accuracies are required")
-      .isArray().withMessage("Accuracies must be a float array")
-      .custom((value) => {
-        for (const num of value) {
-          if (typeof num !== "number" || num < 0 || num > 100) {
-            throw new Error("Accuracy must be between 0 and 100");
-          }
-        }
-        return true;
-      })
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
-  }
-  const id = req.params.id;
-  const { accuracies } = req.body;
-  try {
-    const project = await Project.findOne({ _id: id });
-    project.accuracies = project.accuracies.concat(accuracies);
-    await project.save();
-    res.json({ project: project });
-  } catch (err) {
-    res.status(500).json({ 
-      error: 'PUT_PROJECT_FAILED',
-      message: 'Error when updating project'
-    });
-  }
-});
-
-// PUT - update project's aggregated accuracy
-app.put("/projects/:id/aggregated_accuracy", [
-  check("aggregated_accuracy")
-  .notEmpty().withMessage("Aggregated accuracy is required")
-  .isFloat({ min: 0, max: 100 }).withMessage("Aggregated accuracy must be between 0 and 100")],
-  async (req, res) => {
-  const id = req.params.id;
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
-  }
-  const {aggregated_accuracy} = req.body;
-  try{
-    const project = await Project.findOne({_id: id});
-    project.aggregated_accuracy = aggregated_accuracy
-    await project.save()
-    res.json({ project: project});
-  } catch (err) {
-    res.status(500).json({ 
-      error: 'PUT_PROJECT_FAILED',
-      message: 'Error when updating project'
-    });
-  }
-});
-// POST - Register a user
-app.post(
-  "/register",
-  [
-    check("email").isEmail().withMessage("Email is not valid"),
-    check("password")
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters long"),
-    check("role")
-      .isIn(["client", "admin"])
-      .withMessage('Role must be either "client" or "admin"'),
-    check("name")
-      .optional()
-      .isLength({ min: 3 })
-      .withMessage("Name must be at least 3 characters long"),
-  ],
-  async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: 'REGISTER_FAILED', message: errors.array() });
-    }
-
-    const { email, password, role, name } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({ email, password: hashedPassword, role, name });
-
-    try {
-      await user.save();
-      res.status(201).json({ message : "User registered successfully" });
-
-    } catch (error) {
-      if (error.code === 11000) {
-        // MongoDB duplicate key error code
-        return res.status(409).json({message: "Username is already taken"});
-      }
-      return res.status(500).json({ error: 'REGISTER_FAILED', message: "Error when registering your account" });
-    }
-  }
-);
-
-// user login route
-app.post(
-  "/login",
-  [
-    check("email").notEmpty().withMessage("Email is required"),
-    check("password").notEmpty().withMessage("Password is required"),
-  ],
-  async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'LOGIN_FAILED',
-        message:  errors.array()
-      });
-    }
-    const { email, password } = req.body;
-    try {
-      const user = await User.findOne({ email: email });
-      if (!user) {
-        return res.status(401).json({ 
-          error: 'LOGIN_FAILED',
-          message: 'Invalid credentials'
-        });
-      }
-
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ 
-          error: 'LOGIN_FAILED',
-          message: 'Invalid credentials'
-        });
-      }
-      const token = jwt.sign(
-        { userId: user._id, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: "90d" }
-      );
-      res.json({ token: token, userId: user._id });
-    } catch (err) {
-      res.status(500).json({ 
-        error: 'LOGIN_FAILED',
-        message: 'Error with login'
-      });
-    }
-  }
-);
 
 // POST endpoint to handle the ZIP file upload
 app.post("/upload", upload.single("dataset"), async (req, res, next) => {
@@ -300,7 +127,6 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
     });
   }
 
-
   const zipFilePath = req.file.path;
 
   try {
@@ -309,7 +135,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
       dataset: req.file.originalname,
       size: req.file.size / (1024 * 1024), // Convert bytes to MB
       model,
-      state: 'pending',
+      state: 'Pending',
       name: projectName
     };
     console.log(projectInfo)
@@ -329,7 +155,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
       }
     });
 
-    // TODO - Trigger the train-suppervisor job here
+    // Trigger the train-suppervisor job
     const jobManifest = k8sObjects.getTrainSupervisorObject(projectId, model);
     console.log(jobManifest)
     k8sApi.createNamespacedJob('default', jobManifest)
@@ -357,116 +183,20 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
   }
 });
 
-// GET - retrieve project
-app.get("/projects/:id", 
-async (req, res) => {
-  const id = req.params.id;
-  try{
-    const project = await Project.findOne({_id: id});
-    res.json({ project: project});
-  } catch (err) {
-    res.status(500).json({ 
-      error: 'GET_PROJECT_FAILED',
-      message: 'Error when retrieving project'
-    });
-  }
-});
-// PUT - update project's number of splits
-app.put("/projects/:id/splits", [
-  check("splits")
-  .notEmpty().withMessage("Number of splits is required")
-  .isFloat({ gt: 0 }).withMessage("Number of splits must be greater than 0")],
-async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
-  }
-  const id = req.params.id;
-  const {splits} = req.body;
-  try{
-    const project = await Project.findOne({_id: id});
-    project.n_splits = splits
-    await project.save()
-    res.json({ project: project});
-  } catch (err) {
-    res.status(500).json({ 
-      error: 'PUT_PROJECT_FAILED',
-      message: 'Error when updating project'
-    });
-  }
-});
-
-// PUT - update project's state
-app.put("/projects/:id/state", [
-  check("state")
-  .notEmpty().withMessage("State is required")],
-async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
-  }
-  const id = req.params.id;
-  const {state} = req.body;
-  try{
-    const project = await Project.findOne({_id: id});
-    project.state = state
-    await project.save()
-    res.json({ project: project});
-  } catch (err) {
-    res.status(500).json({ 
-      error: 'PUT_PROJECT_FAILED',
-      message: 'Error when updating project'
-    });
-  }
-});
-
-// PUT - update project's accuracies 
-app.put("/projects/:id/accuracies", [
-  check("accuracies")
-      .notEmpty().withMessage("Accuracies are required")
-      .isArray().withMessage("Accuracies must be a float array")
-      .custom((value) => {
-        for (const num of value) {
-          if (typeof num !== "number" || num < 0 || num > 100) {
-            throw new Error("Accuracy must be between 0 and 100");
-          }
-        }
-        return true;
-      })
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
-  }
-  const id = req.params.id;
-  const { accuracies } = req.body;
-  try {
-    const project = await Project.findOne({ _id: id });
-    project.accuracies = project.accuracies.concat(accuracies);
-    await project.save();
-    res.json({ project: project });
-  } catch (err) {
-    res.status(500).json({ 
-      error: 'PUT_PROJECT_FAILED',
-      message: 'Error when updating project'
-    });
-  }
-});
-
-// PUT - update project's aggregated accuracy
-app.put("/projects/:id/aggregated_accuracy", [
+// PATCH - update project's aggregated accuracy
+app.patch("/projects/:projectId/aggregated_accuracy", [
   check("aggregated_accuracy")
   .notEmpty().withMessage("Aggregated accuracy is required")
   .isFloat({ min: 0, max: 100 }).withMessage("Aggregated accuracy must be between 0 and 100")],
-  async (req, res) => {
-  const id = req.params.id;
+async (req, res) => {
+  const { projectId } = req.params;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
   }
   const {aggregated_accuracy} = req.body;
   try{
-    const project = await Project.findOne({_id: id});
+    const project = await Project.findOne({_id: projectId});
     project.aggregated_accuracy = aggregated_accuracy
     await project.save()
     res.json({ project: project});
@@ -478,24 +208,91 @@ app.put("/projects/:id/aggregated_accuracy", [
   }
 });
 
+// PATCH - update project's number of splits
+app.patch("/projects/:projectId/n-splits", [
+  check("splits")
+  .notEmpty().withMessage("Number of splits is required")
+  .isFloat({ gt: 0 }).withMessage("Number of splits must be greater than 0")],
+async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: 'PATCH_PROJECT_FAILED', message: errors.array() });
+  }
 
-//-----------------------------------DASHBOARD------------------------------------------------// 
-
-app.get('/modelSize', (req, res) => {
-  // Assuming the weekly sales value is hardcoded for demonstration purposes
-  const modelSize = 135;
-  const state = true
-  const n_splits = 10;
-  const accuracies = "70%";
-  const accuracy = [0.70, 0.50, 0.80, 0.20, 0.45];
-  const loss = [0.25, 0.67, 0.65, 0.98,  0.11]
-  const epoch = ["1", "2", "3", "4", "5"];
-
-  // Send the weekly sales value as a JSON response
-  res.json({ modelSize, state, n_splits, accuracies, accuracy, loss, epoch});
+  const { projectId } = req.params;
+  const { splits } = req.body;
+  try{
+    const project = await Project.findOne({_id: projectId});
+    project.n_splits = splits
+    project.splits = []
+    for (let i = 0; i < splits; i++) {
+      project.splits.push({
+        id: i + 1,
+        accuracies: []
+      })
+    }
+    await project.save()
+    res.json({ project: project});
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'PATCH_PROJECT_FAILED',
+      message: 'Error when updating project'
+    });
+  }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log("Server is running on port " + PORT);
+// PATCH - update project's state
+app.patch("/projects/:projectId/state", [
+  check("state")
+  .notEmpty().withMessage("State is required")],
+async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: 'PATCH_PROJECT_FAILED', message: errors.array() });
+  }
+
+  const { projectId } = req.params;
+  const { state } = req.body;
+  try{
+    const project = await Project.findOne({_id: projectId});
+    project.state = state
+    await project.save()
+    res.json({ project: project});
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'PATCH_PROJECT_FAILED',
+      message: 'Error when updating project'
+    });
+  }
+});
+
+// PATCH - Add accuracy to split
+app.patch("/projects/:projectId/splits/:splitId/accuracies", [
+  check("accuracy")
+      .notEmpty().withMessage("Accuracies are required")
+      .isArray().withMessage("Accuracies must be a float array")
+      .custom((value) => {
+        for (const num of value) {
+          if (typeof num !== "number" || num < 0 || num > 100) {
+            throw new Error("Accuracy must be between 0 and 100");
+          }
+        }
+        return true;
+      })
+  ], async (req, res) => {
+    const { projectId, splitId } = req.params;
+    const { accuracy } = req.body;
+
+    try {
+      const project = await Project.findOne({ _id: projectId });
+      project.splits[splitId].accuracies.push(accuracy);
+
+      await project.save();
+      res.json({ project: project });
+    } catch (err) {
+      res.status(500).json({ 
+        error: 'PUT_PROJECT_FAILED',
+        message: 'Error when updating project'
+      });
+    }
 });
