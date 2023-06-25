@@ -31,7 +31,7 @@ export default function DashboardAppPage() {
   };
   
   useEffect(() => {
-    const socket = io('ws://192.168.1.71');
+    const socket = io(window.location.host);
  
     socket.on('connect', () => {
       console.log('Connected to the server');
