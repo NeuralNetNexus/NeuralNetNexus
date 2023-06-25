@@ -16,13 +16,13 @@ def create_volume_mounts(job_type):
     volume_mounts = []
     volumes = []
 
-    volume_mounts.append(client.V1VolumeMount(mount_path="/usr/app/datasets", name='datasets-data'))
+    volume_mounts.append(client.V1VolumeMount(mount_path="/app/datasets", name='datasets-data'))
     volumes.append(client.V1Volume(name='datasets-data', persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-datasets")))
 
     if job_type == "split":
         return volume_mounts, volumes
 
-    volume_mounts.append(client.V1VolumeMount(mount_path="/usr/app/models", name='models-data'))
+    volume_mounts.append(client.V1VolumeMount(mount_path="/app/models", name='models-data'))
     volumes.append(client.V1Volume(name='models-data', persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-models")))
 
     return volume_mounts, volumes
@@ -61,12 +61,14 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
             parallelism=parallelism,
             template=template,
             backoff_limit=4,
+            node_selector={"kubernetes.io/hostname": "helper"},
         )
     else:
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             template=template,
             backoff_limit=4,
+            node_selector={"kubernetes.io/hostname": "helper"},
         )
 
     # Instantiate the job object
