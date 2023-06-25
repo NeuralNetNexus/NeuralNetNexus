@@ -13,7 +13,6 @@ const bodyParser = require("body-parser");
 const k8s = require('@kubernetes/client-node');
 const Project = require("./models.project");
 const k8sObjects = require('./kubernetes-objects');
-
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
 
@@ -87,6 +86,54 @@ async (req, res) => {
     const project = await Project.findOne({_id: projectId});
     res.json({ project: project});
   } catch (err) {
+    res.status(500).json({ 
+      error: 'GET_PROJECT_FAILED',
+      message: 'Error when retrieving project'
+    });
+  }
+});
+
+// GET - retrieve project's files
+app.get("/projects/:projectId/files",
+async (req, res) => {
+  const { projectId } = req.params;
+  try{
+
+    const folderPath = `/usr/app/models/${projectId}`;
+
+    fs.readdir(folderPath, (err, files) => {
+      if (err) {
+        console.error('Error reading folder:', err);
+        return;
+      }
+      res.json({files: files });
+    });
+    
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'GET_PROJECT_FAILED',
+      message: 'Error when retrieving project'
+    });
+  }
+});
+
+
+
+// GET - retrieve project's file by name
+app.get("/projects/:projectId/files/:filename",
+async (req, res) => {
+  const { projectId, filename } = req.params;
+  try{
+    let file = `/usr/app/models/${projectId}/${filename}.`
+    if(filename.includes("confusion_matrix")){
+      file = file + "png";
+    }else{
+      file = file + "pth";
+    }
+    res.sendFile(file);
+    
+  } catch (err) {
+    console.log(err)
     res.status(500).json({ 
       error: 'GET_PROJECT_FAILED',
       message: 'Error when retrieving project'
