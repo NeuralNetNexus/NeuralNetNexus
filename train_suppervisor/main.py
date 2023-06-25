@@ -134,7 +134,7 @@ def main():
     # utility. If no argument provided, the config will be loaded from
     # default location.
     config.load_incluster_config()
-    batch_v1 = client.CoreV1Api()
+    batch_v1 = client.BatchV1Api()
     
     # {1} -> é o ID do projeto
 
