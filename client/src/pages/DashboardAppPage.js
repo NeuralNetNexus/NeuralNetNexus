@@ -22,7 +22,7 @@ import {
 export default function DashboardAppPage() {
   const { id } = useParams();
   const [trainAccuracy, setTrainAccuracy] = useState(null);
-  const [currentState, setCurrentState] = useState('-');
+  const [currentState, setCurrentState] = useState(false);
   const [nSplit, setNSplit] = useState('-');
   const [name, setName] = useState('-');
   const [expanded, setExpanded] = useState(false);
@@ -146,12 +146,12 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={4}>
 
-          <Grid item xs={12} sm={6} md={6}>
-            <AppWidgetSummary title="Status" text={currentState} color={currentState ? 'success' : 'error'} icon={'ant-design:apple-filled'} />
+          <Grid item xs={12} sm={6} md={nSplit != "-" ? 6: 12}>
+            <AppWidgetSummary title="Status" text={currentState ? 'Active' : 'Inactive'} color={currentState ? 'success' : 'error'} icon={'ant-design:info-outlined'} />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={6}>
-            <AppWidgetSummary title="Number of Splits" text={nSplit} color="warning" icon={'ant-design:windows-filled'} />
+          <Grid item xs={12} sm={6} md={nSplit != "-" ? 6 : 0}>
+            <AppWidgetSummary title="Number of Splits" text={nSplit} color="warning" icon={'ant-design:split-cells-outlined'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -192,13 +192,13 @@ export default function DashboardAppPage() {
               <AccordionDetails>
                 <Grid container spacing={4}>
                   <Grid item xs={12} sm={6} md={4}>
-                    <AppWidgetSummary title="Epoch" text={String(item.epoch[-1] || 1)} color="success" icon={'ant-design:android-filled'} />
+                    <AppWidgetSummary title="Epoch" text={String(item.epoch[-1] || 1)} color="success" icon={'ant-design:field_ number-outlined'} />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
-                    <AppWidgetSummary title="CPU Usage" text={item.cpu_usage} color="warning" icon={'ant-design:android-filled'} />
+                    <AppWidgetSummary title="CPU Usage" text={item.cpu_usage} color="warning" icon={'ant-design:number-outlined'} />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
-                    <AppWidgetSummary title="RAM Usage" text={item.ram_usage} color="error" icon={'ant-design:android-filled'} />
+                    <AppWidgetSummary title="RAM Usage" text={item.ram_usage} color="error" icon={'ant-design:number-outlined'} />
                   </Grid>
                 </Grid>
                 <Grid container spacing={4} sx={{ paddingBottom: '16px', paddingTop: '16px'}}>

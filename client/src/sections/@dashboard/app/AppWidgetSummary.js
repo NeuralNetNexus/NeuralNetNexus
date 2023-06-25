@@ -30,6 +30,9 @@ AppWidgetSummary.propTypes = {
 };
 
 export default function AppWidgetSummary({ title, text, isText, icon, color = 'primary', sx, ...other }) {
+  if (text == null || text == "" || text == "-") {
+    return null;
+  }
   return (
     <Card
       sx={{

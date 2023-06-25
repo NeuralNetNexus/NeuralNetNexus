@@ -28,6 +28,9 @@ AppWidgetSummaryNoIcon.propTypes = {
 };
 
 export default function AppWidgetSummaryNoIcon({ title, text, isText, color = 'primary', sx, ...other }) {
+  if (text == null || text == "" || text == "-") {
+    return null;
+  }
   return (
     <Card
       sx={{
