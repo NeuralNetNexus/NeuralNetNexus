@@ -15,7 +15,6 @@ model = getenv('MODEL')
 @sio.event
 def connect():
     print("Connected to server")
-    sio.emit('joinProject')
 
 def create_volume_mounts(job_type):
     volume_mounts = []
@@ -108,14 +107,13 @@ def main():
     
     # {1} -> é o ID do projeto
 
-    sio.connect(f'ws://socket-service/{project_id}')
+    sio.connect(f'ws://socket-service')
     sio.emit('joinProject', project_id)
-
     # =================  Split Job  ================= #
 
     # Update the state of the project to "splitting (1-4)"
     requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "splitting (1-4)"})
-    sio.emit('projectState', { "state": "splitting (1-4)"}, project_id)
+    sio.emit('projectState', { "state": "splitting (1-4)"})
 
     split_job_name = f"split-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexussplit:latest"
@@ -129,7 +127,7 @@ def main():
 
     # Update the state of the project to "training (2-4)"
     requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "training (2-4)"})
-    sio.emit('projectState', { "state": "training (2-4)"}, project_id)
+    sio.emit('projectState', { "state": "training (2-4)"})
 
     train_job_name = f"train-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexustrain:latest"
@@ -144,7 +142,7 @@ def main():
 
     # Update the state of the project to "aggregating (3-4)"
     requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "aggregating (3-4)"})
-    sio.emit('projectState', { "state": "aggregating (3-4)"}, project_id)
+    sio.emit('projectState', { "state": "aggregating (3-4)"})
 
     aggregator_job_name = f"aggregator-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
@@ -154,7 +152,7 @@ def main():
 
     # Update the state of the project to "finished"
     requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "finished"})
-    sio.emit('projectState', { "state": "finished"}, project_id)
+    sio.emit('projectState', { "state": "finished"})
 
 if __name__ == '__main__':
     main()

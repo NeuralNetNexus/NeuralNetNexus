@@ -7,6 +7,8 @@ import socketio
 
 sio = socketio.Client()
 
+project_id = os.getenv('PROJECT_ID')
+
 @sio.event
 def connect():
     print("Connected to server")
@@ -52,7 +54,7 @@ def split_zip(pvc_path, project_id):
             'splits': ratio
         }
         requests.put(f"http://backend-service/projects/{project_id}/splits", json=data)
-        sio.emit('projectStatus', project_id, { "n_batch": ratio})
+        sio.emit('projectStatus', { "n_batch": ratio})
 
     except:
         print("Error sending the number of splits to the backend-service")
@@ -93,7 +95,6 @@ def split_zip(pvc_path, project_id):
 
 
 if __name__ == '__main__':
-    project_id = os.getenv('PROJECT_ID')
-    pvc_path = "/app/datasets/"
+    pvc_path = "/app/datasets"
 
     split_zip(pvc_path, project_id)
