@@ -333,7 +333,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
       message: 'ZIP file received',
       projectId: projectId
     });
-/*
+
     // TODO - Trigger the train-suppervisor job here
     const jobManifest = k8sObjects.getTrainSupervisorObject(projectId, model);
     console.log(jobManifest)
@@ -352,7 +352,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
           message: 'Error creating job'
         });
       });
-*/
+
   } catch (error) { 
     console.error('Error saving file information to MongoDB:', error);
     res.status(500).json({
@@ -391,6 +391,30 @@ async (req, res) => {
   try{
     const project = await Project.findOne({_id: id});
     project.n_splits = splits
+    await project.save()
+    res.json({ project: project});
+  } catch (err) {
+    res.status(500).json({ 
+      error: 'PUT_PROJECT_FAILED',
+      message: 'Error when updating project'
+    });
+  }
+});
+
+// PUT - update project's state
+app.put("/projects/:id/state", [
+  check("state")
+  .notEmpty().withMessage("State is required")],
+async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
+  }
+  const id = req.params.id;
+  const {state} = req.body;
+  try{
+    const project = await Project.findOne({_id: id});
+    project.state = state
     await project.save()
     res.json({ project: project});
   } catch (err) {
