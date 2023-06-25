@@ -139,6 +139,7 @@ export default function DashboardAppPage() {
         console.error(error);
       });
   };*/
+  const { id } = useParams();
 
   return (
     <>
@@ -147,8 +148,8 @@ export default function DashboardAppPage() {
       </Helmet>
 
       <Container maxWidth="xl">
-        <Typography variant="h2" sx={{ mb: 5 }}>
-          Neural Net Nexus
+        <Typography variant="h3" sx={{ mb: 5 }}>
+          Project nº {id}
         </Typography>
 
         <Grid container spacing={3}>
