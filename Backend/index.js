@@ -31,7 +31,10 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.log("Failed to connect to MongoDB", err));
+  .catch((err) => {
+    console.log("Failed to connect to MongoDB", err);
+    process.exit(5);
+  });
 
 app.use(
   cors({
