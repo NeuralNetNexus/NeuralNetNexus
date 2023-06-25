@@ -1,20 +1,6 @@
 // @mui
 import PropTypes from 'prop-types';
-import { alpha, styled } from '@mui/material/styles';
 import { Card, Typography } from '@mui/material';
-
-// ----------------------------------------------------------------------
-
-const StyledIcon = styled('div')(({ theme }) => ({
-  margin: 'auto',
-  display: 'flex',
-  borderRadius: '50%',
-  alignItems: 'center',
-  width: theme.spacing(8),
-  height: theme.spacing(8),
-  justifyContent: 'center',
-  marginBottom: theme.spacing(3),
-}));
 
 // ----------------------------------------------------------------------
 
@@ -28,7 +14,7 @@ AppWidgetSummaryNoIcon.propTypes = {
 };
 
 export default function AppWidgetSummaryNoIcon({ title, text, isText, color = 'primary', sx, ...other }) {
-  if (text == null || text == "" || text == "-") {
+  if (text === null || text === "" || text === "-") {
     return null;
   }
   return (

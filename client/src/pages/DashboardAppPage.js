@@ -22,7 +22,7 @@ import {
 export default function DashboardAppPage() {
   const { id } = useParams();
   const [trainAccuracy, setTrainAccuracy] = useState(null);
-  const [currentState, setCurrentState] = useState(false);
+  const [currentState, setCurrentState] = useState("Pending");
   const [nSplit, setNSplit] = useState('-');
   const [name, setName] = useState('-');
   const [expanded, setExpanded] = useState(false);
@@ -146,11 +146,11 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={4}>
 
-          <Grid item xs={12} sm={6} md={nSplit != "-" ? 6: 12}>
-            <AppWidgetSummary title="Status" text={currentState ? 'Active' : 'Inactive'} color={currentState ? 'success' : 'error'} icon={'ant-design:info-outlined'} />
+          <Grid item xs={12} sm={6} md={nSplit !== "-" ? 6: 12}>
+            <AppWidgetSummary title="Status" text={currentState ? currentState : "Pending"} color={currentState === "Pending" ? 'warning' : 'success'} icon={'ant-design:info-outlined'} />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={nSplit != "-" ? 6 : 0}>
+          <Grid item xs={12} sm={6} md={nSplit !== "-" ? 6 : 0}>
             <AppWidgetSummary title="Number of Splits" text={nSplit} color="warning" icon={'ant-design:split-cells-outlined'} />
           </Grid>
 
