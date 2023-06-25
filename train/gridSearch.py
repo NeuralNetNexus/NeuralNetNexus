@@ -16,12 +16,20 @@ from torch.utils.data import random_split
 import shutil
 
 
+
+
 def pil_loader(path):
     return Image.open(path).convert('RGB')
 
+project_id = os.getenv('PROJECT_ID')
+job_comptetion_index = os.getenv('JOB_COMPLETION_INDEX')
+
+dataset_name = f"/app/datasets/{project_id}_{job_comptetion_index+1}"
+
+
 # Datasets
 dataset_collection = [
-    { "path": "./training", "channels": 3 },
+    { "path": dataset_name, "channels": 3 },
 ]
 
 image_transforms = [
@@ -251,6 +259,8 @@ for i, dataset in enumerate(dataset_collection):
                     print(log)
                     with open(os.path.join(history_path, 'train.log'), 'a+') as the_file:
                         the_file.write(log + "\n\n")
+
+
 
             history = np.array(history)
 
