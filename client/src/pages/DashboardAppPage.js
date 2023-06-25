@@ -33,7 +33,7 @@ export default function DashboardAppPage() {
   useEffect(async () => {
     
     try {
-      const response = await axios.get(`/api/projects/${id}`, formData);
+      const response = await axios.get(`/api/projects/${id}`);
       const project = response.data
       console.log(project);
 
