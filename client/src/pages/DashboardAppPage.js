@@ -86,38 +86,33 @@ export default function DashboardAppPage() {
           (data) => data.source === values.train_index
         );
     
-        // Create a new data object for the current source
-        const newData = {
-          source: values.train_index,
-          trainAccuracy: [],
-          valAccuracy: [],
-          trainLoss: [],
-          valLoss: [],
-        };
-    
         // If the source already exists in the graph data, update its metrics
         if (sourceIndex !== -1) {
-          updatedGraphData[sourceIndex] = {
-            ...updatedGraphData[sourceIndex],
-            ...newData,
-          };
+          const sourceData = updatedGraphData[sourceIndex];
+          sourceData.epoch.push(sourceData.trainAccuracy.length + 1);
+          sourceData.trainAccuracy.push(values.train_accuracy);
+          sourceData.valAccuracy.push(values.val_accuracy);
+          sourceData.trainLoss.push(values.train_loss);
+          sourceData.valLoss.push(values.val_loss);
         } else {
-          // If the source is new, add it to the graph data
+          // If the source is new, create a new data object with arrays
+          const newData = {
+            source: updatedGraphData.length + 1,
+            cpu_usage: values.cpu_usage,
+            ram_usage: values.ram_usage,
+            trainAccuracy: [values.train_accuracy],
+            valAccuracy: [values.val_accuracy],
+            trainLoss: [values.train_loss],
+            valLoss: [values.val_loss],
+            epoch: [1],
+          };
           updatedGraphData.push(newData);
         }
     
-        // Push the metrics to the corresponding arrays for the current source
-        const sourceData = updatedGraphData.find(
-          (data) => data.source === values.train_index
-        );
-        sourceData.trainAccuracy.push((prevGraphData) => [...prevGraphData, values.train_accuracy]);
-        sourceData.valAccuracy.push(values.val_accuracy);
-        sourceData.trainLoss.push(values.train_loss);
-        sourceData.valLoss.push(values.val_loss);
-    
         return updatedGraphData;
       });
-    });    
+    });
+        
 
     // Cleanup the websocket connection on component unmount
     return () => {
@@ -146,7 +141,7 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} sm={4} md={4}>
-            <AppWidgetSummary title="Model Size" text={modelSize} icon={'ant-design:android-filled'} />
+            <AppWidgetSummary title="Test Accuracy" text={modelSize + "%"} icon={'ant-design:android-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={4} md={4}>
@@ -167,21 +162,18 @@ export default function DashboardAppPage() {
                 id={`panel${index}bh-header`}
               >
                 <Typography sx={{ width: '100%', flexShrink: 0 }}>
-                  Train_pod_name
+                  Pod #{item.source}
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Grid container spacing={4}>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <AppWidgetSummary title="Train Index" text={item.source} icon={'ant-design:android-filled'} />
+                  <Grid item xs={12} sm={6} md={4}>
+                    <AppWidgetSummary title="Epoch" text={String(item.epoch[-1] || 1)} color="success" icon={'ant-design:android-filled'} />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <AppWidgetSummary title="Epoch" text={item.epoch} color="success" icon={'ant-design:android-filled'} />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <AppWidgetSummary title="CPU Usage" text={item.cpu_usage} color="warning" icon={'ant-design:android-filled'} />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <AppWidgetSummary title="RAM Usage" text={item.ram_usage} color="error" icon={'ant-design:android-filled'} />
                   </Grid>
                 </Grid>
