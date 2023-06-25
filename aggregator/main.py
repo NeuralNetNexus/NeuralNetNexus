@@ -17,6 +17,7 @@ def get_model(model_name):
         model = models.efficientnet_v2_s(pretrained=False)
     elif model_name == 'SqueezeNet':
         model = models.squeezenet1_0(pretrained=False)
+    return model
 
 def train(model_dir, model_name):
     model_files = [f for f in os.listdir(model_dir) if f.endswith('.pth')]
