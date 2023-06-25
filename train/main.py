@@ -37,8 +37,7 @@ job_completion_index = os.getenv('JOB_COMPLETION_INDEX')
 
 sio = socketio.Client()
 sio.connect('ws://socket-service')
-sio.emit('joinProject', project_id)
-
+sio.emit('joinProject', {"project_id": project_id})
 
 def pil_loader(path):
     return Image.open(path).convert('RGB')
@@ -284,6 +283,7 @@ for i, dataset in enumerate(dataset_collection):
                 }
                 requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/metrics", json=data)
                 sio.emit('trainingMetrics', { 
+                    'projectId': project_id,
                     "train_index": job_completion_index+1, 
                     "epoch": epoch_i+1,
                     "train_accuracy": avg_train_acc*100,

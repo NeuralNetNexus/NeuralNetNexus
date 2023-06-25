@@ -11,7 +11,7 @@ sio = socketio.Client()
 project_id = os.getenv('PROJECT_ID')    
     
 sio.connect('ws://socket-service')
-sio.emit('joinProject', project_id)
+sio.emit('joinProject', {"project_id": project_id})
 
 def unzip_folder(zip_path, extract_path):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -51,7 +51,7 @@ def split_zip(pvc_path, project_id):
             'splits': ratio
         }
         requests.patch(f"http://backend-service/projects/{project_id}/n-splits", json=data)
-        sio.emit('projectStatus', { "n_batch": ratio})
+        sio.emit('projectStatus', {'projectId': project_id, "n_batch": ratio})
 
     except:
         print("Error sending the number of splits to the backend-service or websocket")

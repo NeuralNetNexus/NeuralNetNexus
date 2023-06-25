@@ -51,6 +51,17 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
 
     # Define the job's spec
     if completions and parallelism:
+        terms = client.V1NodeSelectorTerm(
+            match_expressions=[
+                {'key': 'computing', 'operator': 'In', 'values': ['yessir']}
+            ]
+        )
+        node_selector = client.V1NodeSelector(node_selector_terms=[terms])
+        node_affinity = client.V1NodeAffinity(
+            required_during_scheduling_ignored_during_execution=node_selector
+        )
+        affinity = client.V1Affinity(node_affinity=node_affinity)
+
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             completion_mode="Indexed",
@@ -60,6 +71,17 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
             backoff_limit=4,
         )
     else:
+        terms = client.V1NodeSelectorTerm(
+            match_expressions=[
+                {'key': 'helper', 'operator': 'In', 'values': ['yessir']}
+            ]
+        )
+        node_selector = client.V1NodeSelector(node_selector_terms=[terms])
+        node_affinity = client.V1NodeAffinity(
+            required_during_scheduling_ignored_during_execution=node_selector
+        )
+        affinity = client.V1Affinity(node_affinity=node_affinity)
+
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             template=template,
