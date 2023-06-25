@@ -401,21 +401,20 @@ async (req, res) => {
   }
 });
 
-// PUT - update project's status
-app.put("/projects/:id/status", [
-  check("status")
-  .notEmpty().withMessage("Status is required")
-  .isString().withMessage("Status must be string")],
+// PUT - update project's state
+app.put("/projects/:id/state", [
+  check("state")
+  .notEmpty().withMessage("State is required")],
 async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
   }
   const id = req.params.id;
-  const {status} = req.body;
+  const {state} = req.body;
   try{
     const project = await Project.findOne({_id: id});
-    project.status = status
+    project.state = state
     await project.save()
     res.json({ project: project});
   } catch (err) {
