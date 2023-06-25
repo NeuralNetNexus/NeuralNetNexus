@@ -8,9 +8,7 @@ from collections import OrderedDict
 project_id = os.getenv('PROJECT_ID')
 model = os.getenv('MODEL')
 
-def train(model_dir, model_name):
-    model_files = [f for f in os.listdir(model_dir) if f.endswith('.pth')]
-
+def get_model(model_name):
     if model_name == 'VGG16':
         model = models.vgg16(pretrained=False) # create a vgg16 model architecture        
     elif model_name == 'ResNet18':
@@ -19,6 +17,11 @@ def train(model_dir, model_name):
         model = models.efficientnet_v2_s(pretrained=False)
     elif model_name == 'SqueezeNet':
         model = models.squeezenet1_0(pretrained=False)
+
+def train(model_dir, model_name):
+    model_files = [f for f in os.listdir(model_dir) if f.endswith('.pth')]
+
+    model = get_model(model_name)
 
     params = model.state_dict()
 
@@ -38,11 +41,11 @@ def train(model_dir, model_name):
         params[k] /= n_models
 
     # Load averaged parameters into the model architecture
-    model_avg = models.vgg16(pretrained=False)
+    model_avg = get_model(model_name)
     model_avg.load_state_dict(params)
 
     # Save the averaged model
-    torch.save(model_avg.state_dict(), 'model_avg.pth')
+    torch.save(model_avg.state_dict(), f'{dest_dir}/model_avg.pth')
 
 if __name__ == '__main__':
 

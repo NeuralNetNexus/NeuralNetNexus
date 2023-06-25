@@ -30,10 +30,18 @@ const myModelSchema = new Schema({
     type: Number,
     required: false
   },
-  accuracies: {
-    type: [Number],
-    required: false
-  }
+  splits: [
+    {
+      id: {
+        type: Number,
+        required: true,
+      },
+      accuracies: {
+        type: [Number],
+        required: true,
+      },
+    },
+  ],
 }, {
   timestamps: true,
 });

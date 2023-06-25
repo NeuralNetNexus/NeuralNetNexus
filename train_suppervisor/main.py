@@ -109,9 +109,9 @@ def main():
     sio.emit('joinProject', project_id)
     # =================  Split Job  ================= #
 
-    # Update the state of the project to "splitting (1-4)"
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "splitting (1-4)"})
-    sio.emit('projectState', { "state": "splitting (1-4)"})
+    # Update the state of the project to "[1/4] Splitting Dataset"
+    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[1/4] Splitting Dataset"})
+    sio.emit('projectState', { "state": "[1/4] Splitting Dataset"})
 
     split_job_name = f"split-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexussplit:latest"
@@ -123,9 +123,9 @@ def main():
 
     # =================  Training Jobs  ================= #
 
-    # Update the state of the project to "training (2-4)"
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "training (2-4)"})
-    sio.emit('projectState', { "state": "training (2-4)"})
+    # Update the state of the project to "[2/4] Distributed Training"
+    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[2/4] Distributed Training"})
+    sio.emit('projectState', { "state": "[2/4] Distributed Training"})
 
     train_job_name = f"train-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexustrain:latest"
@@ -139,8 +139,8 @@ def main():
     # =================  Aggregator Job  ================= #
 
     # Update the state of the project to "aggregating (3-4)"
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "aggregating (3-4)"})
-    sio.emit('projectState', { "state": "aggregating (3-4)"})
+    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[3/4] Aggregating"})
+    sio.emit('projectState', { "state": "[3/4] Aggregating"})
 
     aggregator_job_name = f"aggregator-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
@@ -149,8 +149,8 @@ def main():
     get_job_status(batch_v1, aggregator_job_name)
 
     # Update the state of the project to "finished"
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "finished"})
-    sio.emit('projectState', { "state": "finished"})
+    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[4/4] Done"})
+    sio.emit('projectState', { "state": "[4/4] Done"})
 
 if __name__ == '__main__':
     main()

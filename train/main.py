@@ -16,6 +16,7 @@ from torch.utils.data import random_split
 import shutil
 import socketio
 from kubernetes import client, config
+import requests
 
 
 config.load_kube_config()
@@ -284,15 +285,24 @@ for i, dataset in enumerate(dataset_collection):
                 cpu_usage = container_metrics.usage["cpu"]
                 ram_usage = container_metrics.usage["memory"]
 
-            sio.emit('trainingMetrics', { "train_index": job_completion_index, 
-                                            "epoch": epoch_i+1,
-                                            "train_accuracy": avg_train_acc*100,
-                                                "train_loss": avg_train_loss,
-                                                "val_accuracy": avg_valid_acc*100,
-                                                "val_loss": avg_valid_loss,
-                                                "cpu_usage": cpu_usage,
-                                                "ram_usage": ram_usage
-                                                })
+            try:
+                data = {
+                    'accuracy': avg_train_acc*100
+                }
+                requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/accuracies", json=data)
+                sio.emit('trainingMetrics', { 
+                    "train_index": job_completion_index+1, 
+                    "epoch": epoch_i+1,
+                    "train_accuracy": avg_train_acc*100,
+                    "train_loss": avg_train_loss,
+                    "val_accuracy": avg_valid_acc*100,
+                    "val_loss": avg_valid_loss,
+                    "cpu_usage": cpu_usage,
+                    "ram_usage": ram_usage
+                })
+
+            except:
+                print("Error sending the metrics to the backend-service or websocket")
 
             history = np.array(history)
 
