@@ -30,103 +30,93 @@ export default function DashboardAppPage() {
     setExpanded(isExpanded ? panel : false);
   };
   
-  useEffect(async () => {
-    
-    try {
-      const response = await axios.get(`/api/projects/${id}`);
-      const project = response.data
-      console.log(project);
-
-      setTrainAccuracy(project.aggregated_accuracy)
-      setCurrentState(project.state)
-      setNSplit(project.n_splits)
-      setGraphData(() => {
-
-        let data = []
-        for (let i = 0; i < project.n_splits; i++) {
-          const size = project.splits[i].train_accuracies.length
-          let epochs = Array.from({ length: size }, (_, index) => index + 1);
-
-          let obj = {
-            epoch: epochs,
-            trainAccuracy: project.splits[i].train_accuracies,
-            valAccuracy: project.splits[i].train_accuracies,
-            trainLoss: project.splits[i].train_accuracies,
-            valLoss: project.splits[i].train_accuracies
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`/api/projects/${id}`);
+        const project = response.data;
+        console.log(project);
+  
+        setTrainAccuracy(project.aggregated_accuracy);
+        setCurrentState(project.state);
+        setNSplit(project.n_splits);
+        setGraphData(() => {
+          let data = [];
+          for (let i = 0; i < project.n_splits; i++) {
+            const size = project.splits[i].train_accuracies.length;
+            let epochs = Array.from({ length: size }, (_, index) => index + 1);
+  
+            let obj = {
+              epoch: epochs,
+              trainAccuracy: project.splits[i].train_accuracies,
+              valAccuracy: project.splits[i].train_accuracies,
+              trainLoss: project.splits[i].train_accuracies,
+              valLoss: project.splits[i].train_accuracies,
+            };
+            data.push(obj);
           }
-          data.push(obj)
-        }
-
-        return data
-      });
-
-    } catch (err) {
-      console.error(err);
-    }
-
-    const socket = io(window.location.host);
- 
-    socket.on('connect', () => {
-      console.log('Connected to the server');
-      socket.emit("joinProject", id)
-
-    });
-
-    socket.on('aggregatorMetrics', (values) => {
-      setTrainAccuracy(values.test_accuracy);
-    });
-
-    socket.on('projectStatus', (values) => {
-      setCurrentState(values.status);
-    });
-
-    socket.on('splitNumber', (values) => {
-      setNSplit(values.n_batch);
-    });
-
-    socket.on('trainingMetrics', (values) => {
-      setGraphData((prevGraphData) => {
-        // Create a copy of the previous graph data
-        const updatedGraphData = [...prevGraphData];
-    
-        // Find the index of the source in the graph data
-        const sourceIndex = updatedGraphData.findIndex(
-          (data) => data.source === values.train_index
-        );
-    
-        // If the source already exists in the graph data, update its metrics
-        if (sourceIndex !== -1) {
-          const sourceData = updatedGraphData[sourceIndex];
-          sourceData.epoch.push(sourceData.trainAccuracy.length + 1);
-          sourceData.trainAccuracy.push(values.train_accuracy);
-          sourceData.valAccuracy.push(values.val_accuracy);
-          sourceData.trainLoss.push(values.train_loss.toFixed(2));
-          sourceData.valLoss.push(values.val_loss.toFixed(2));
-        } else {
-          // If the source is new, create a new data object with arrays
-          const newData = {
-            source: updatedGraphData.length + 1,
-            cpu_usage: values.cpu_usage,
-            ram_usage: values.ram_usage,
-            trainAccuracy: [values.train_accuracy],
-            valAccuracy: [values.val_accuracy],
-            trainLoss: [values.train_loss.toFixed(2)],
-            valLoss: [values.val_loss.toFixed(2)],
-            epoch: [1],
-          };
-          updatedGraphData.push(newData);
-        }
-    
-        return updatedGraphData;
-      });
-    });
-        
-    // Cleanup the websocket connection on component unmount
-    return () => {
-      socket.disconnect();
+  
+          return data;
+        });
+  
+        const socket = io(window.location.host);
+  
+        socket.on('connect', () => {
+          console.log('Connected to the server');
+          socket.emit('joinProject', id);
+        });
+  
+        socket.on('aggregatorMetrics', (values) => {
+          setTrainAccuracy(values.test_accuracy);
+        });
+  
+        socket.on('projectStatus', (values) => {
+          setCurrentState(values.status);
+        });
+  
+        socket.on('splitNumber', (values) => {
+          setNSplit(values.n_batch);
+        });
+  
+        socket.on('trainingMetrics', (values) => {
+          setGraphData((prevGraphData) => {
+            const updatedGraphData = [...prevGraphData];
+            const sourceIndex = updatedGraphData.findIndex((data) => data.source === values.train_index);
+  
+            if (sourceIndex !== -1) {
+              const sourceData = updatedGraphData[sourceIndex];
+              sourceData.epoch.push(sourceData.trainAccuracy.length + 1);
+              sourceData.trainAccuracy.push(values.train_accuracy);
+              sourceData.valAccuracy.push(values.val_accuracy);
+              sourceData.trainLoss.push(values.train_loss.toFixed(2));
+              sourceData.valLoss.push(values.val_loss.toFixed(2));
+            } else {
+              const newData = {
+                source: updatedGraphData.length + 1,
+                cpu_usage: values.cpu_usage,
+                ram_usage: values.ram_usage,
+                trainAccuracy: [values.train_accuracy],
+                valAccuracy: [values.val_accuracy],
+                trainLoss: [values.train_loss.toFixed(2)],
+                valLoss: [values.val_loss.toFixed(2)],
+                epoch: [1],
+              };
+              updatedGraphData.push(newData);
+            }
+            return updatedGraphData;
+          });
+        });
+  
+        return () => {
+          socket.disconnect();
+        };
+      } catch (err) {
+        console.error(err);
+      }
     };
-    //fetchData();
-  }, [id]);
+  
+    fetchData();
+  }, []);   
 
   return (
     <>
