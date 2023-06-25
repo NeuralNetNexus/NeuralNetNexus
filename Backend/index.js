@@ -329,25 +329,20 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
       }
     });
 
-    res.status(200).json({
-      message: 'ZIP file received',
-      projectId: projectId
-    });
-
     // TODO - Trigger the train-suppervisor job here
     const jobManifest = k8sObjects.getTrainSupervisorObject(projectId, model);
     console.log(jobManifest)
     k8sApi.createNamespacedJob('default', jobManifest)
       .then((response) => {
         console.log('Job created with response:', response.body);
-        res.status(200).json({
+        return res.status(200).json({
           message: 'ZIP file received',
           projectId: projectId
         });
       })
       .catch((err) => {
         console.error('Error creating job:', err);
-        res.status(500).json({
+        return res.status(500).json({
           error: 'UPLOAD_FAILED',
           message: 'Error creating job'
         });
