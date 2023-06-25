@@ -23,6 +23,7 @@ export default function DashboardAppPage() {
   const [trainAccuracy, setTrainAccuracy] = useState(null);
   const [currentState, setCurrentState] = useState('-');
   const [nSplit, setNSplit] = useState('-');
+  const [name, setName] = useState('-');
   const [expanded, setExpanded] = useState(false);
   const [graphData, setGraphData] = useState([]);
   
@@ -40,6 +41,7 @@ export default function DashboardAppPage() {
         setTrainAccuracy(project.aggregated_accuracy);
         setCurrentState(project.state);
         setNSplit(project.n_splits);
+        setName(project.name);
         setGraphData(() => {
           let data = [];
           for (let i = 0; i < project.n_splits; i++) {
@@ -126,7 +128,7 @@ export default function DashboardAppPage() {
 
       <Container maxWidth="xl">
         <Typography variant="h3" sx={{ mb: 5 }}>
-          Project Nº {id}
+          Project {name}
         </Typography>
 
         <Grid container spacing={3}>
