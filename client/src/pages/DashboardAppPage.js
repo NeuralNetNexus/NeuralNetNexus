@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-//import axios from 'axios';
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -20,9 +20,9 @@ import {
 
 export default function DashboardAppPage() {
   const { id } = useParams();
-  const [modelSize, setTrainAccuracy] = useState(false);
+  const [trainAccuracy, setTrainAccuracy] = useState(null);
   const [currentState, setCurrentState] = useState('-');
-  const [nSplit, setNSplit] = useState(0);
+  const [nSplit, setNSplit] = useState('-');
   const [expanded, setExpanded] = useState(false);
   const [graphData, setGraphData] = useState([]);
   
@@ -30,7 +30,40 @@ export default function DashboardAppPage() {
     setExpanded(isExpanded ? panel : false);
   };
   
-  useEffect(() => {
+  useEffect(async () => {
+    
+    try {
+      const response = await axios.get(`/api/projects/${id}`, formData);
+      const project = response.data
+      console.log(project);
+
+      setTrainAccuracy(project.aggregated_accuracy)
+      setCurrentState(project.state)
+      setNSplit(project.n_splits)
+      setGraphData(() => {
+
+        let data = []
+        for (let i = 0; i < project.n_splits; i++) {
+          const size = project.splits[i].train_accuracies.length
+          let epochs = Array.from({ length: size }, (_, index) => index + 1);
+
+          let obj = {
+            epoch: epochs,
+            trainAccuracy: project.splits[i].train_accuracies,
+            valAccuracy: project.splits[i].train_accuracies,
+            trainLoss: project.splits[i].train_accuracies,
+            valLoss: project.splits[i].train_accuracies
+          }
+          data.push(obj)
+        }
+
+        return data
+      });
+
+    } catch (err) {
+      console.error(err);
+    }
+
     const socket = io(window.location.host);
  
     socket.on('connect', () => {
@@ -88,7 +121,6 @@ export default function DashboardAppPage() {
       });
     });
         
-
     // Cleanup the websocket connection on component unmount
     return () => {
       socket.disconnect();
@@ -104,27 +136,29 @@ export default function DashboardAppPage() {
 
       <Container maxWidth="xl">
         <Typography variant="h3" sx={{ mb: 5 }}>
-          Project nº {id}
+          Project Nº {id}
         </Typography>
 
         <Grid container spacing={3}>
 
           <Grid item xs={12} sm={4} md={4}>
-            <AppWidgetSummary title="Status" text={currentState ? 'Active' : 'Inactive'} color={currentState ? 'success' : 'error'} icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="Status" text={currentState} color={currentState ? 'success' : 'error'} icon={'ant-design:apple-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={4} md={4}>
-            <AppWidgetSummary title="Test Accuracy" text={modelSize + "%"} icon={'ant-design:android-filled'} />
+            <AppWidgetSummary title="Test Accuracy" text={trainAccuracy ? trainAccuracy + "%" : "-"} icon={'ant-design:android-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={4} md={4}>
             <AppWidgetSummary title="Number of Splits" text={nSplit} color="warning" icon={'ant-design:windows-filled'} />
           </Grid>
 
-
-          <Typography variant="h4" sx={{ mb: 1, paddingTop: "50px", paddingLeft: "30px"}}>
-            Training Pods
-          </Typography>
+          { graphData.length > 0 ?
+            <Typography variant="h4" sx={{ mb: 1, paddingTop: "50px", paddingLeft: "30px"}}>
+              Training Pods
+            </Typography>
+            : null
+          }
 
           {graphData.map((item, index) => (
           <Grid item xs={12} sm={12} md={12} key={index}>

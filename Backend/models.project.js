@@ -36,7 +36,19 @@ const myModelSchema = new Schema({
         type: Number,
         required: true,
       },
-      accuracies: {
+      train_accuracies: {
+        type: [Number],
+        required: true,
+      },
+      val_accuracies: {
+        type: [Number],
+        required: true,
+      },
+      train_losses: {
+        type: [Number],
+        required: true,
+      },
+      val_losses: {
         type: [Number],
         required: true,
       },

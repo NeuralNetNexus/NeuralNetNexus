@@ -12,12 +12,11 @@ import copy
 from PIL import Image
 import models
 import random
-from torch.utils.data import random_split
 import shutil
 import socketio
 from kubernetes import client, config
 import requests
-
+import sys
 
 config.load_kube_config()
 
@@ -137,7 +136,8 @@ for i, dataset in enumerate(dataset_collection):
             model_ft = model.to(device)
 
             dataset_name = os.path.split(dataset_path)[1]
-            history_path = f"./output/{dataset_name}-{model_ft.__class__.__name__.lower()}-epochs-{hp['epochs']}-lr-{hp['lr']}-batch-{hp['batch_size']}-optim-adam-cross"
+            
+            history_path = f"/app/models/{project_id}"
             if not os.path.exists(history_path):
                 os.makedirs(history_path)
                 
@@ -151,7 +151,6 @@ for i, dataset in enumerate(dataset_collection):
             
             # Observe that all parameters are being optimized
             optimizer_ft = optim.Adam(params_to_update, lr=hp["lr"], betas=(0.9, 0.999))
-            #optimizer_ft = optim.SGD(params_to_update, lr=hp["lr"], momentum=0.9)
 
             # Setup the loss fxn
             criterion = nn.CrossEntropyLoss()
@@ -164,8 +163,6 @@ for i, dataset in enumerate(dataset_collection):
             best_model = None
 
             print(f"==========  TRAIN  ==========")
-            with open(os.path.join(history_path, 'train.log'), 'a+') as the_file:
-                the_file.write(f'==========  TRAIN  ==========\n')
 
             for epoch_i in range(hp["epochs"]):
                 epoch_start = time.time()
@@ -264,18 +261,11 @@ for i, dataset in enumerate(dataset_collection):
             
                 log = "\tTraining: Loss - {:.4f}, Accuracy - {:.2f}%\n\tValidation: Loss - {:.4f}, Accuracy - {:.2f}%\n\tTime: {:.4f}s".format(avg_train_loss, avg_train_acc*100, avg_valid_loss, avg_valid_acc*100, epoch_end-epoch_start)
                 print(log)
-                with open(os.path.join(history_path, 'train.log'), 'a+') as the_file:
-                    the_file.write(f'Epoch {epoch_i+1}:\n{log}\n')
 
                 # Save if the model has best accuracy till now
                 if epoch_i == hp["epochs"] - 1:
                     model_ft.load_state_dict(best_model)
-                    # torch.save(model_ft, os.path.join(history_path, f'model_fold_{fold}.pt'))
-                    torch.save(model_ft, os.path.join(history_path, f'model.pt'))
-                    log = f"\nBest Model from Epoch {best_epoch+1}"
-                    print(log)
-                    with open(os.path.join(history_path, 'train.log'), 'a+') as the_file:
-                        the_file.write(log + "\n\n")
+                    torch.save(model_ft, os.path.join(history_path, f'{job_completion_index+1}.pth'))
 
                 # Retrieve pod metrics
                 metrics = api_client.read_namespaced_pod_metrics(pod_name, namespace)
@@ -287,9 +277,12 @@ for i, dataset in enumerate(dataset_collection):
 
             try:
                 data = {
-                    'accuracy': avg_train_acc*100
+                    'train_accuracy': avg_train_acc*100,
+                    'val_accuracy': avg_valid_acc*100,
+                    'train_loss': avg_train_loss,
+                    'val_loss': avg_valid_loss
                 }
-                requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/accuracies", json=data)
+                requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/metrics", json=data)
                 sio.emit('trainingMetrics', { 
                     "train_index": job_completion_index+1, 
                     "epoch": epoch_i+1,
@@ -304,30 +297,7 @@ for i, dataset in enumerate(dataset_collection):
             except:
                 print("Error sending the metrics to the backend-service or websocket")
 
-            history = np.array(history)
+            # Calc Confusion Matrix If we Have Time
 
-            # Save val accuracy to file
-            np.savetxt(os.path.join(history_path, 'accuracy_values.txt'), history[:,1], fmt='%.4f', delimiter=';')
 
-            plt.plot(history[:,0:2])
-            plt.legend(['Tr Loss', 'Val Loss'])
-            plt.xlabel('Epoch Number')
-            plt.ylabel('Loss')
-            plt.ylim(0,2)
-            plt.savefig(os.path.join(history_path, 'loss_curve.png'))
-
-            plt.clf()
-
-            plt.plot(history[:,2:4])
-            plt.legend(['Tr Accuracy', 'Val Accuracy'])
-            plt.xlabel('Epoch Number')
-            plt.ylabel('Accuracy')
-            plt.ylim(0,1)
-            plt.savefig(os.path.join(history_path, 'accuracy_curve.png'))
-
-            plt.clf()
-
-            test_acc = 0.0
-            test_loss = 0.0
-
-            confusion_matrix = torch.zeros(num_classes, num_classes)
+sys.exit(0)
