@@ -13,6 +13,9 @@ microk8s kubectl apply -f kubernetes/roles
 #microk8s kubectl label nodes raspberrypitwo kubernetes.io/role=helper
 #microk8s kubectl label nodes fedora kubernetes.io/role=platform
 
+kubectl label nodes raspberrypitwo helper=yes
+kubectl label nodes neuralnetnexus-desktop computing=yes
+
 # Create objects
 microk8s kubectl apply -f kubernetes/configmaps/*
 microk8s kubectl apply -f kubernetes/pvc

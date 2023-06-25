@@ -8,6 +8,23 @@ const getTrainSupervisorObject = function (projectId, model) {
         name: `train-supervisor-${projectId}`,
       },
       spec: {
+          affinity: {
+            nodeAffinity: {
+                preferredDuringSchedulingIgnoredDuringExecution: {
+                    nodeSelectorTerms: [
+                        {
+                            matchExpressions: [
+                                {
+                                    key: 'helper',
+                                    operator: 'In',
+                                    values: ['yes']
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
         ttlSecondsAfterFinished: 10,
         template: {
           spec: {

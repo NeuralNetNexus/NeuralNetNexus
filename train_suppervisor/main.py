@@ -57,22 +57,45 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
 
     # Define the job's spec
     if completions and parallelism:
+        terms = client.V1NodeSelectorTerm(
+            match_expressions=[
+                {'key': 'computing', 'operator': 'In', 'values': ['yes']}
+            ]
+        )
+        node_selector = client.V1NodeSelector(node_selector_terms=[terms])
+        node_affinity = client.V1NodeAffinity(
+            required_during_scheduling_ignored_during_execution=node_selector
+        )
+        affinity = client.V1Affinity(node_affinity=node_affinity)
+
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             completion_mode="Indexed",
             completions=completions,
             parallelism=parallelism,
             template=template,
-            backoff_limit=4,
-            selector={"kubernetes.io/role": "computing"},
+            backoff_limit=4
         )
     else:
+        terms = client.V1NodeSelectorTerm(
+            match_expressions=[
+                {'key': 'helper', 'operator': 'In', 'values': ['yes']}
+            ]
+        )
+        node_selector = client.V1NodeSelector(node_selector_terms=[terms])
+        node_affinity = client.V1NodeAffinity(
+            preferred_during_scheduling_ignored_during_execution=[node_selector]
+        )
+        affinity = client.V1Affinity(node_affinity=node_affinity)
+
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             template=template,
-            backoff_limit=4,
-            selector={"kubernetes.io/role": "helper"},
+            backoff_limit=4
         )
+
+    # Don't forget to assign the affinity to the template.spec
+    template.spec.affinity = affinity
 
     # Instantiate the job object
     job = client.V1Job(
