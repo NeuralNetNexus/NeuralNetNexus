@@ -38,15 +38,15 @@ export default function DashboardAppPage() {
   const { id } = useParams();
   const [trainAccuracy, setTrainAccuracy] = useState(null);
   const [currentState, setCurrentState] = useState("Pending");
-  const [nSplit, setNSplit] = useState('-');
+  const [nSplit, setNSplit] = useState('20');
   const [name, setName] = useState('-');
   const [expanded, setExpanded] = useState(false);
   const [graphData, setGraphData] = useState([]);
 
-  const [accuracy_avg, setAvgAccuracy] = useState('-');
-  const [precision, setPrecision] = useState('-');
-  const [recall, setRecall] = useState('-');
-  const [scoreF1, setF1Score] = useState('-');
+  const [accuracy_avg, setAvgAccuracy] = useState('20');
+  const [precision, setPrecision] = useState('20');
+  const [recall, setRecall] = useState('20');
+  const [scoreF1, setF1Score] = useState('20');
   
   const [files, setFiles] = useState([]);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -186,18 +186,14 @@ export default function DashboardAppPage() {
           Project {name}
         </Typography>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={4} paddingBottom={10}>
 
           <Grid item xs={12} sm={6} md={6}>
-            <img src={`http://localhost:3001/projects/${id}/files/confusion_matrix`} alt="Confusion Matrix" />
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={6}>
-            <AppWidgetSummary title="Status" text={currentState} color={currentState ? 'success' : 'error'} icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="Status" text={currentState} color={currentState ? 'warning' : 'error'} icon={'ant-design:info-outlined'} />
           </Grid>
           
           <Grid item xs={12} sm={6} md={6}>
-            <AppWidgetSummary title="Number of Splits" text={nSplit} color="warning" icon={'ant-design:windows-filled'} />
+            <AppWidgetSummary title="Number of Splits" text={nSplit} color="info" icon={'ant-design:split-cells-outlined'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -320,44 +316,56 @@ export default function DashboardAppPage() {
         ))}
         </Grid>
 
-        <Scrollbar>
-        <TableContainer sx={{ minWidth: 800 }}>
-  <Table>
-    <TableHead>
-      <TableRow>
-        <TableCell align="left">File Name</TableCell>
-        <TableCell align="right">Download</TableCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {files.map((file) => {
-        const fileName = file.split(".")[0];
-        if(file.includes("png")){
-          return;
-        }
-        return (
-          <TableRow hover key={file} tabIndex={-1}>
 
-            <TableCell align="left" component="th" scope="row" padding="none">
-              <Typography variant="subtitle2" noWrap>
-                {file}
-              </Typography>
-            </TableCell>
-            <TableCell align="right">
-              <a
-                href={`http://localhost:3001/projects/${id}/files/${fileName}`}
-                target="_blank"
-              >
-                <Iconify icon={'eva:download-outline'} sx={{ mr: 2 }} />
-              </a>
-            </TableCell>
-          </TableRow>
-        );
-      })}
-    </TableBody>
-  </Table>
-</TableContainer>
-            </Scrollbar>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Grid item xs={12} sm={6} md={6} paddingBottom={10} paddingTop={10}>
+            <img src={`http://localhost:3001/projects/${id}/files/confusion_matrix`} alt="Confusion Matrix" />
+          </Grid>
+        </div>
+
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Project Files
+        </Typography>
+
+        <Grid item xs={12} sm={6} md={6}>
+          <Scrollbar>
+            <TableContainer sx={{ minWidth: 800 }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="left">File Name</TableCell>
+                    <TableCell align="right">Download</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {files.map((file) => {
+                    const fileName = file.split(".")[0];
+                    if(file.includes("png")){
+                      return;
+                    }
+                    return (
+                      <TableRow hover key={file} tabIndex={-1}>
+
+                        <TableCell align="left" component="th" scope="row" padding="none">
+                          <Typography variant="subtitle2" noWrap>
+                            {file}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <a
+                            href={`http://localhost:3001/projects/${id}/files/${fileName}`}
+                            target="_blank"
+                          >
+                            <Iconify icon={'eva:download-outline'} sx={{ mr: 2 }} />
+                          </a>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Scrollbar>
             <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
@@ -367,7 +375,7 @@ export default function DashboardAppPage() {
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
-
+        </Grid>
       </Container>
     </>
   );
