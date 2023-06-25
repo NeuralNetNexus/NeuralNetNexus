@@ -2,8 +2,6 @@
 import PropTypes from 'prop-types';
 import { alpha, styled } from '@mui/material/styles';
 import { Card, Typography } from '@mui/material';
-// components
-import Iconify from '../../../components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -20,7 +18,7 @@ const StyledIcon = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-AppWidgetSummary.propTypes = {
+AppWidgetSummaryNoIcon.propTypes = {
   color: PropTypes.string,
   icon: PropTypes.string,
   title: PropTypes.string.isRequired,
@@ -29,32 +27,20 @@ AppWidgetSummary.propTypes = {
   isText: PropTypes.bool,
 };
 
-export default function AppWidgetSummary({ title, text, isText, icon, color = 'primary', sx, ...other }) {
+export default function AppWidgetSummaryNoIcon({ title, text, isText, color = 'primary', sx, ...other }) {
   return (
     <Card
       sx={{
-        py: 2,
+        py: 3,
         boxShadow: 0,
         textAlign: 'center',
         color: (theme) => theme.palette[color].darker,
         bgcolor: (theme) => theme.palette[color].lighter,
-        height: 180,
+        height: 120,
         ...sx,
       }}
       {...other}
     >
-      <StyledIcon
-        sx={{
-          color: (theme) => theme.palette[color].dark,
-          backgroundImage: (theme) =>
-            `linear-gradient(135deg, ${alpha(theme.palette[color].dark, 0)} 0%, ${alpha(
-              theme.palette[color].dark,
-              0.24
-            )} 100%)`,
-        }}
-      >
-        <Iconify icon={icon} width={24} height={24} />
-      </StyledIcon>
 
       <Typography variant="h3">
         {text}

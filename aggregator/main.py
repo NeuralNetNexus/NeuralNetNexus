@@ -158,12 +158,13 @@ def test():
         print(f"{idx_to_class[key]} - {round(indiv_acc[key] * 100, 2)}%")
         
 
-    sio.emit('aggregatorMetrics', { 
+    sio.emit('aggregatorMetrics', {
+                "projectId": project_id,
                 "loss": avg_test_loss,
                 "accuracy": avg_test_acc*100+1, 
                 "precision": precision*100,
                 "recall": recall*100,
-                "f1-Score": f1_score*100,
+                "f1Score": f1_score*100,
             })
 
 if __name__ == '__main__':

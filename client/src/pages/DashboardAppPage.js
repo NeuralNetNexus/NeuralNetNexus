@@ -14,6 +14,7 @@ import { Grid, Container, Typography } from '@mui/material';
 import {
   AppWebsiteVisits,
   AppWidgetSummary,
+  AppWidgetSummaryNoIcon,
 } from '../sections/@dashboard/app';
 
 // ----------------------------------------------------------------------
@@ -26,6 +27,11 @@ export default function DashboardAppPage() {
   const [name, setName] = useState('-');
   const [expanded, setExpanded] = useState(false);
   const [graphData, setGraphData] = useState([]);
+
+  const [accuracy_avg, setAvgAccuracy] = useState('-');
+  const [precision, setPrecision] = useState('-');
+  const [recall, setRecall] = useState('-');
+  const [scoreF1, setF1Score] = useState('-');
   
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
@@ -79,6 +85,13 @@ export default function DashboardAppPage() {
         socket.on('splitNumber', (values) => {
           setNSplit(values.n_batch);
         });
+
+        socket.on('aggregatorMetrics', (values) => {
+          setAvgAccuracy(values.accuracy);
+          setPrecision(values.precision);
+          setRecall(values.recall);
+          setF1Score(values.f1Score);
+        });
   
         socket.on('trainingMetrics', (values) => {
           setGraphData((prevGraphData) => {
@@ -131,18 +144,30 @@ export default function DashboardAppPage() {
           Project {name}
         </Typography>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={4}>
 
-          <Grid item xs={12} sm={4} md={4}>
+          <Grid item xs={12} sm={6} md={6}>
             <AppWidgetSummary title="Status" text={currentState} color={currentState ? 'success' : 'error'} icon={'ant-design:apple-filled'} />
           </Grid>
 
-          <Grid item xs={12} sm={4} md={4}>
-            <AppWidgetSummary title="Test Accuracy" text={trainAccuracy ? trainAccuracy + "%" : "-"} icon={'ant-design:android-filled'} />
+          <Grid item xs={12} sm={6} md={6}>
+            <AppWidgetSummary title="Number of Splits" text={nSplit} color="warning" icon={'ant-design:windows-filled'} />
           </Grid>
 
-          <Grid item xs={12} sm={4} md={4}>
-            <AppWidgetSummary title="Number of Splits" text={nSplit} color="warning" icon={'ant-design:windows-filled'} />
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummaryNoIcon title="Accuracy" text={accuracy_avg} color="secondary" />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummaryNoIcon title="Precision" text={precision} color="secondary"/>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummaryNoIcon title="Recall" text={recall} color="secondary" />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummaryNoIcon title="F1 Score" text={scoreF1} color="secondary"  />
           </Grid>
 
           { graphData.length > 0 ?
