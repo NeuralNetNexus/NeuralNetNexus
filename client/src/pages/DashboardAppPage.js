@@ -63,7 +63,7 @@ export default function DashboardAppPage() {
   
         socket.on('connect', () => {
           console.log('Connected to the server');
-          socket.emit('joinProject', id);
+          socket.emit('joinProject', {'projectId': id});
         });
   
         socket.on('aggregatorMetrics', (values) => {
