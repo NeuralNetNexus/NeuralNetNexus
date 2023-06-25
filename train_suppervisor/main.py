@@ -59,7 +59,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
     if completions and parallelism:
         terms = client.V1NodeSelectorTerm(
             match_expressions=[
-                {'key': 'computing', 'operator': 'In', 'values': ['yes']}
+                {'key': 'computing', 'operator': 'In', 'values': ['yessir']}
             ]
         )
         node_selector = client.V1NodeSelector(node_selector_terms=[terms])
@@ -79,12 +79,12 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
     else:
         terms = client.V1NodeSelectorTerm(
             match_expressions=[
-                {'key': 'helper', 'operator': 'In', 'values': ['yes']}
+                {'key': 'helper', 'operator': 'In', 'values': ['yessir']}
             ]
         )
         node_selector = client.V1NodeSelector(node_selector_terms=[terms])
         node_affinity = client.V1NodeAffinity(
-            preferred_during_scheduling_ignored_during_execution=[node_selector]
+            required_during_scheduling_ignored_during_execution=node_selector
         )
         affinity = client.V1Affinity(node_affinity=node_affinity)
 
