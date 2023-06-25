@@ -43,25 +43,30 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
         env=env if env else None,
     )
 
-    # Define the job's template
-    template = client.V1PodTemplateSpec(
-        metadata=client.V1ObjectMeta(labels={"app": job_name}),
-        spec=client.V1PodSpec(restart_policy="Never", containers=[container], volumes=volumes if volumes else None),
-    )
-
     # Define the job's spec
     if completions and parallelism:
-        terms = client.V1NodeSelectorTerm(
-            match_expressions=[
-                {'key': 'computing', 'operator': 'In', 'values': ['yessir']}
-            ]
+        affinity = client.V1Affinity(
+            node_affinity=client.V1NodeAffinity(
+                required_during_scheduling_ignored_during_execution=client.V1NodeSelector(
+                    node_selector_terms=[
+                        client.V1NodeSelectorTerm(
+                            match_expressions=[
+                                client.V1NodeSelectorRequirement(
+                                    key="computing",
+                                    operator="In",
+                                    values=["yessir"]
+                                )
+                            ]
+                        )
+                    ]
+                )
+            )
         )
-        node_selector = client.V1NodeSelector(node_selector_terms=[terms])
-        node_affinity = client.V1NodeAffinity(
-            required_during_scheduling_ignored_during_execution=node_selector
+        # Define the job's template
+        template = client.V1PodTemplateSpec(
+            metadata=client.V1ObjectMeta(labels={"app": job_name}),
+            spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity, volumes=volumes if volumes else None),
         )
-        affinity = client.V1Affinity(node_affinity=node_affinity)
-        template.spec.affinity = affinity
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             completion_mode="Indexed",
@@ -71,17 +76,28 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
             backoff_limit=4,
         )
     else:
-        terms = client.V1NodeSelectorTerm(
-            match_expressions=[
-                {'key': 'helper', 'operator': 'In', 'values': ['yessir']}
-            ]
+        affinity = client.V1Affinity(
+            node_affinity=client.V1NodeAffinity(
+                required_during_scheduling_ignored_during_execution=client.V1NodeSelector(
+                    node_selector_terms=[
+                        client.V1NodeSelectorTerm(
+                            match_expressions=[
+                                client.V1NodeSelectorRequirement(
+                                    key="helper",
+                                    operator="In",
+                                    values=["yessir"]
+                                )
+                            ]
+                        )
+                    ]
+                )
+            )
         )
-        node_selector = client.V1NodeSelector(node_selector_terms=[terms])
-        node_affinity = client.V1NodeAffinity(
-            required_during_scheduling_ignored_during_execution=node_selector
+        # Define the job's template
+        template = client.V1PodTemplateSpec(
+            metadata=client.V1ObjectMeta(labels={"app": job_name}),
+            spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity, volumes=volumes if volumes else None),
         )
-        affinity = client.V1Affinity(node_affinity=node_affinity)
-        template.spec.affinity = affinity
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             template=template,
@@ -121,6 +137,60 @@ def main():
     batch_v1 = client.BatchV1Api()
     
     # {1} -> é o ID do projeto
+    # Define the affinity
+    affinity = client.V1Affinity(
+        node_affinity=client.V1NodeAffinity(
+            required_during_scheduling_ignored_during_execution=client.V1NodeSelector(
+                node_selector_terms=[
+                    client.V1NodeSelectorTerm(
+                        match_expressions=[
+                            client.V1NodeSelectorRequirement(
+                                key="computing",
+                                operator="In",
+                                values=["yessir"]
+                            )
+                        ]
+                    )
+                ]
+            )
+        )
+    )
+
+    # Define the container
+    container = client.V1Container(
+        name="nginx",
+        image="nginx",
+        image_pull_policy="IfNotPresent"
+    )
+
+    # Define the pod spec
+    pod_spec = client.V1PodSpec(
+        containers=[container],
+        restart_policy="Never",
+        affinity=affinity
+    )
+
+    # Define the job spec
+    job_spec = client.V1JobSpec(
+        template=client.V1PodTemplateSpec(
+            metadata=client.V1ObjectMeta(name="nginx-job"),
+            spec=pod_spec
+        )
+    )
+
+    # Define the job metadata
+    metadata = client.V1ObjectMeta(name="nginx-job")
+
+    # Define the job
+    job = client.V1Job(
+        api_version="batch/v1",
+        kind="Job",
+        metadata=metadata,
+        spec=job_spec
+    )
+
+    # Create the job
+    batch_v1.create_namespaced_job(namespace="default", body=job)
 
     # =================  Split Job  ================= #
 
