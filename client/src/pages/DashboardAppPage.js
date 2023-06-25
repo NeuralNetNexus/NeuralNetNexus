@@ -1,5 +1,4 @@
 import { Helmet } from 'react-helmet-async';
-import { faker } from '@faker-js/faker';
 //import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import Accordion from '@mui/material/Accordion';
@@ -9,45 +8,21 @@ import { io } from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 
 // @mui
-import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
-// components
-import Iconify from '../components/iconify';
+
 // sections
 import {
-  AppTasks,
-  AppNewsUpdate,
-  AppOrderTimeline,
-  AppCurrentVisits,
   AppWebsiteVisits,
-  AppTrafficBySite,
   AppWidgetSummary,
-  AppCurrentSubject,
-  AppConversionRates,
 } from '../sections/@dashboard/app';
 
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
-  /*const theme = useTheme();
-  const [modelSize, setModelSize] = useState("0");
-  const [currentState, setCurrentState] = useState(false);
-  const [n_splits, setNSplit] = useState("0");
-  const [accuracies, setAccuracies] = useState("0%");
-  const [accuracy, setAccuracy] = useState(0);
-  const [loss, setLoss] = useState(0);
-  const [epoch, setEpoch] = useState("0");
-  const [expanded, setExpanded] = useState(false);
-  const [items, setItems] = useState({});
-  const [jsonArray, setItemData] = useState([]);*/
-
   const { id } = useParams();
-
-  const theme = useTheme();
-  const [modelSize, setTrainAccuracy] = useState('-');
+  const [modelSize, setTrainAccuracy] = useState(false);
   const [currentState, setCurrentState] = useState('-');
   const [nSplit, setNSplit] = useState(0);
-  const [trainingData, setTrainingData] = useState([]);
   const [expanded, setExpanded] = useState(false);
   const [graphData, setGraphData] = useState([]);
   
@@ -55,8 +30,6 @@ export default function DashboardAppPage() {
     setExpanded(isExpanded ? panel : false);
   };
   
-  let [train_accuracy, setTrainAccurary] = useState([]);
-
   useEffect(() => {
     const socket = io('ws://192.168.1.71');
  
@@ -94,8 +67,8 @@ export default function DashboardAppPage() {
           sourceData.epoch.push(sourceData.trainAccuracy.length + 1);
           sourceData.trainAccuracy.push(values.train_accuracy);
           sourceData.valAccuracy.push(values.val_accuracy);
-          sourceData.trainLoss.push(values.train_loss);
-          sourceData.valLoss.push(values.val_loss);
+          sourceData.trainLoss.push(values.train_loss.toFixed(2));
+          sourceData.valLoss.push(values.val_loss.toFixed(2));
         } else {
           // If the source is new, create a new data object with arrays
           const newData = {
@@ -104,8 +77,8 @@ export default function DashboardAppPage() {
             ram_usage: values.ram_usage,
             trainAccuracy: [values.train_accuracy],
             valAccuracy: [values.val_accuracy],
-            trainLoss: [values.train_loss],
-            valLoss: [values.val_loss],
+            trainLoss: [values.train_loss.toFixed(2)],
+            valLoss: [values.val_loss.toFixed(2)],
             epoch: [1],
           };
           updatedGraphData.push(newData);
@@ -121,7 +94,7 @@ export default function DashboardAppPage() {
       socket.disconnect();
     };
     //fetchData();
-  }, []);
+  }, [id]);
 
   return (
     <>
