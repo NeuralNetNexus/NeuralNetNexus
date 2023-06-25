@@ -12,10 +12,6 @@ sio = socketio.Client()
 project_id = getenv('PROJECT_ID')
 model = getenv('MODEL')
 
-@sio.event
-def connect():
-    print("Connected to server")
-
 def create_volume_mounts(job_type):
     volume_mounts = []
     volumes = []

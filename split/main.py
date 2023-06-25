@@ -7,14 +7,10 @@ import socketio
 
 sio = socketio.Client()
 
-project_id = os.getenv('PROJECT_ID')
-
-@sio.event
-def connect():
-    print("Connected to server")
-    sio.emit('joinProject', project_id)
+project_id = os.getenv('PROJECT_ID')    
     
 sio.connect('ws://socket-service')
+sio.emit('joinProject', project_id)
 
 def unzip_folder(zip_path, extract_path):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:

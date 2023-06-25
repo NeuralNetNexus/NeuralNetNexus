@@ -294,7 +294,7 @@ for i, dataset in enumerate(dataset_collection):
                                                 "val_loss": avg_valid_loss,
                                                 "cpu_usage": cpu_usage,
                                                 "ram_usage": ram_usage
-                                                }, project_id)
+                                                })
 
             history = np.array(history)
 
