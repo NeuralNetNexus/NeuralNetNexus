@@ -158,7 +158,7 @@ def test():
         print(f"{idx_to_class[key]} - {round(indiv_acc[key] * 100, 2)}%")
         
 
-    sio.emit('trainingMetrics', { 
+    sio.emit('aggregatorMetrics', { 
                 "loss": avg_test_loss,
                 "accuracy": avg_test_acc*100+1, 
                 "precision": precision*100,
