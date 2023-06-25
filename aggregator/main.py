@@ -9,10 +9,15 @@ from PIL import Image
 from torchvision import datasets, transforms
 import itertools
 import matplotlib.pyplot as plt
-
+import socketio
 
 project_id = os.getenv('PROJECT_ID')
 model = os.getenv('MODEL')
+
+sio = socketio.Client()
+sio.connect('ws://socket-service')
+sio.emit('joinProject', project_id)
+
 
 def get_model(model_name):
     if model_name == 'VGG16':
@@ -68,8 +73,10 @@ def compute_metrics(confusion_matrix):
 
     return precision.mean(), recall.mean(), f1_score.mean()
 
-def test():
+def pil_loader(path):
+    return Image.open(path).convert('RGB')
 
+def test():
     test_dataset = { "path": f"/app/datasets/{project_id}_test", "channels": 3 }
     dataset_test_obj = datasets.ImageFolder(root=test_dataset['path'], transform=image_transforms["train"], loader=lambda path: pil_loader(path))
     test_loader = DataLoader(dataset_test_obj, batch_size=32, shuffle=True)
@@ -151,10 +158,16 @@ def test():
         print(f"{idx_to_class[key]} - {round(indiv_acc[key] * 100, 2)}%")
         
 
-    
+    sio.emit('trainingMetrics', { 
+                "loss": avg_test_loss,
+                "accuracy": avg_test_acc*100+1, 
+                "precision": precision*100,
+                "recall": recall*100,
+                "f1-Score": f1_score*100,
+            })
 
 if __name__ == '__main__':
 
     dest_dir =  f"/app/models/{project_id}"
-
     train(dest_dir, model)
+    test()
