@@ -4,7 +4,7 @@ metadata:
   name: pvc-datasets
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   volumeMode: Filesystem
   resources:
     requests:

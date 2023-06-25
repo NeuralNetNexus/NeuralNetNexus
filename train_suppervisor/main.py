@@ -64,7 +64,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
         )
         # Define the job's template
         template = client.V1PodTemplateSpec(
-            metadata=client.V1ObjectMeta(labels={"app": job_name}),
+            metadata=client.V1ObjectMeta(labels={"app": "split"}),
             spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity, volumes=volumes if volumes else None),
         )
         spec = client.V1JobSpec(
@@ -143,8 +143,8 @@ def main():
     image_name = "rafaelxokito/neuralnetnexussplit:latest"
     env_vars = {"PROJECT_ID": project_id}
 
-    # split_job = create_job_object(split_job_name, image_name, env_vars)
-    # create_job(batch_v1, split_job)
+    split_job = create_job_object(split_job_name, image_name, env_vars)
+    create_job(batch_v1, split_job)
     get_job_status(batch_v1, split_job_name)
 
     # =================  Training Jobs  ================= #
