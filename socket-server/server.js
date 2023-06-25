@@ -14,32 +14,32 @@ const io = new Server(httpServer, {
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
-  socket.on('joinProject', (projectId) => {
-      socket.join(projectId);
+  socket.on('joinProject', (data) => {
+      socket.join(data.projectId);
   });
 
   // Live state of the project from a project supervisor
-  socket.on('projectState', (projectId, state) => {
-    console.log('projectState', projectId, state);
-    io.to(projectId).emit('projectState', state);
+  socket.on('projectState', (data) => {
+    console.log('projectState', data.projectId, data.state);
+    io.to(data.projectId).emit('projectState', data.state);
   });
 
   // A number related to the project from a related client
-  socket.on('splitNumber', (projectId, number) => {
-    console.log('splitNumber', projectId, number);
-    io.to(projectId).emit('splitNumber', number);
+  socket.on('splitNumber', (data) => {
+    console.log('splitNumber', data.projectId, data.number);
+    io.to(data.projectId).emit('splitNumber', data.number);
   });
 
   // Several metrics related to a process from a related client
-  socket.on('trainingMetrics', (projectId, metrics) => {
-    console.log('trainingMetrics', projectId, metrics);
-    io.to(projectId).emit('trainingMetrics', metrics);
+  socket.on('trainingMetrics', (data) => {
+    console.log('trainingMetrics', data.projectId, data.metrics);
+    io.to(data.projectId).emit('trainingMetrics', data.metrics);
   });
 
   // Several metrics related to a final process from a related client
-  socket.on('aggregatorMetrics', (projectId, metrics) => {
-    console.log('aggregatorMetrics', projectId, metrics);
-    io.to(projectId).emit('aggregatorMetrics', metrics);
+  socket.on('aggregatorMetrics', (data) => {
+    console.log('aggregatorMetrics', data.projectId, data.metrics);
+    io.to(data.projectId).emit('aggregatorMetrics', data.metrics);
   });
 
   socket.on('disconnect', () => {

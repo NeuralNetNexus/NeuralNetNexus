@@ -60,8 +60,10 @@ def split_zip(pvc_path, project_id):
     class_list = os.listdir(train_path)
 
     # Iterate over each class
-    for class_name in class_list:
+    for idx, class_name in enumerate(class_list):
         class_path = os.path.join(train_path, class_name)
+
+        print(f"Progress: {idx / len(class_list)}%")
         
         # Get the list of images in the class folder
         images_list = os.listdir(class_path)
@@ -88,6 +90,7 @@ def split_zip(pvc_path, project_id):
                     shutil.copy(image_path, split_dir)
 
     shutil.rmtree(dataset_path)
+    print(f"Progress: 100%")
 
 
 if __name__ == '__main__':

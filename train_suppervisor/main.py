@@ -1,6 +1,7 @@
 from os import getenv
 from time import sleep
 import requests
+import sys
 
 import socketio
 import yaml
@@ -49,7 +50,9 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
     # Define the job's template
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": job_name}),
-        spec=client.V1PodSpec(restart_policy="Never", containers=[container], volumes=volumes if volumes else None),
+        spec=client.V1PodSpec(restart_policy="Never", 
+                              containers=[container], 
+                              volumes=volumes if volumes else None),
     )
 
     # Define the job's spec
@@ -61,14 +64,14 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
             parallelism=parallelism,
             template=template,
             backoff_limit=4,
-            node_selector={"kubernetes.io/hostname": "helper"},
+            selector={"kubernetes.io/role": "computing"},
         )
     else:
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             template=template,
             backoff_limit=4,
-            node_selector={"kubernetes.io/hostname": "helper"},
+            selector={"kubernetes.io/role": "helper"},
         )
 
     # Instantiate the job object
@@ -105,13 +108,13 @@ def main():
     
     # {1} -> é o ID do projeto
 
-    sio.connect(f'ws://socket-service')
-    sio.emit('joinProject', project_id)
+    sio.connect(f'ws://socket-service', namespaces=['/'])
+    sio.emit('joinProject', {'projectId': project_id})
     # =================  Split Job  ================= #
 
     # Update the state of the project to "[1/4] Splitting Dataset"
     requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[1/4] Splitting Dataset"})
-    sio.emit('projectState', { "state": "[1/4] Splitting Dataset"})
+    sio.emit('projectState', {'projectId': project_id, 'state': '[1/4] Splitting Dataset'})
 
     split_job_name = f"split-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexussplit:latest"
@@ -125,7 +128,7 @@ def main():
 
     # Update the state of the project to "[2/4] Distributed Training"
     requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[2/4] Distributed Training"})
-    sio.emit('projectState', { "state": "[2/4] Distributed Training"})
+    sio.emit('projectState', {'projectId': project_id, 'state': '[2/4] Distributed Training'})
 
     train_job_name = f"train-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexustrain:latest"
@@ -140,7 +143,7 @@ def main():
 
     # Update the state of the project to "aggregating (3-4)"
     requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[3/4] Aggregating"})
-    sio.emit('projectState', { "state": "[3/4] Aggregating"})
+    sio.emit('projectState', {'projectId': project_id, 'state': '[3/4] Aggregating'})
 
     aggregator_job_name = f"aggregator-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
@@ -150,7 +153,8 @@ def main():
 
     # Update the state of the project to "finished"
     requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[4/4] Done"})
-    sio.emit('projectState', { "state": "[4/4] Done"})
+    sio.emit('projectState', {'projectId': project_id, 'state': '[4/4] Done'})
 
 if __name__ == '__main__':
     main()
+    sys.exit(0)
