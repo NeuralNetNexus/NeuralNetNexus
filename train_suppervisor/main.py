@@ -43,12 +43,6 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
         env=env if env else None,
     )
 
-    # Define the job's template
-    template = client.V1PodTemplateSpec(
-        metadata=client.V1ObjectMeta(labels={"app": job_name}),
-        spec=client.V1PodSpec(restart_policy="Never", containers=[container], volumes=volumes if volumes else None),
-    )
-
     # Define the job's spec
     if completions and parallelism:
         affinity = client.V1Affinity(
@@ -68,6 +62,11 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
                 )
             )
         )
+        # Define the job's template
+        template = client.V1PodTemplateSpec(
+            metadata=client.V1ObjectMeta(labels={"app": job_name}),
+            spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity, volumes=volumes if volumes else None),
+        )
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             completion_mode="Indexed",
@@ -75,7 +74,6 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
             parallelism=parallelism,
             template=template,
             backoff_limit=4,
-            affinity=affinity
         )
     else:
         affinity = client.V1Affinity(
@@ -95,11 +93,15 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
                 )
             )
         )
+        # Define the job's template
+        template = client.V1PodTemplateSpec(
+            metadata=client.V1ObjectMeta(labels={"app": job_name}),
+            spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity, volumes=volumes if volumes else None),
+        )
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             template=template,
             backoff_limit=4,
-            affinity=affinity
         )
 
     # Instantiate the job object
