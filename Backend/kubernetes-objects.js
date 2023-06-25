@@ -17,7 +17,7 @@ const getTrainSupervisorObject = function (projectId, model) {
                                 {
                                     key: 'helper',
                                     operator: 'In',
-                                    values: ['yes']
+                                    values: ['yessir']
                                 }
                             ]
                         }

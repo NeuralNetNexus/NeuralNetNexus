@@ -101,7 +101,7 @@ for i, dataset in enumerate(dataset_collection):
     hps = {
         "lr": [0.001],
         "batch_size": [32],
-        "epochs": [1],
+        "epochs": [2],
     }
     hps_iter = [dict(zip(hps.keys(), values)) for values in itertools.product(*hps.values())]
 
