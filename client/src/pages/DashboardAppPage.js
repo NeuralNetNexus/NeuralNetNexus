@@ -41,6 +41,8 @@ export default function DashboardAppPage() {
   const [items, setItems] = useState({});
   const [jsonArray, setItemData] = useState([]);*/
 
+  const { id } = useParams();
+
   const theme = useTheme();
   const [modelSize, setTrainAccuracy] = useState('-');
   const [currentState, setCurrentState] = useState('-');
@@ -60,7 +62,7 @@ export default function DashboardAppPage() {
  
     socket.on('connect', () => {
       console.log('Connected to the server');
-      socket.emit("joinProject", "meicm123")
+      socket.emit("joinProject", id)
 
     });
 
@@ -120,8 +122,6 @@ export default function DashboardAppPage() {
     };
     //fetchData();
   }, []);
-
-  const { id } = useParams();
 
   return (
     <>
