@@ -122,6 +122,52 @@ def main():
     
     # {1} -> é o ID do projeto
 
+    # Define the affinity
+    affinity = client.V1Affinity(
+        node_affinity=client.V1NodeAffinity(
+            required_during_scheduling_ignored_during_execution=client.V1NodeSelector(
+                node_selector_terms=[
+                    client.V1NodeSelectorTerm(
+                        match_expressions=[
+                            client.V1NodeSelectorRequirement(
+                                key="computing",
+                                operator="In",
+                                values=["yessir"]
+                            )
+                        ]
+                    )
+                ]
+            )
+        )
+    )
+
+    # Define the container
+    container = client.V1Container(
+        name="nginx",
+        image="nginx",
+        image_pull_policy="IfNotPresent"
+    )
+
+    # Define the pod spec
+    spec = client.V1PodSpec(
+        containers=[container],
+        affinity=affinity
+    )
+
+    # Define the pod metadata
+    metadata = client.V1ObjectMeta(name="nginx")
+
+    # Define the pod
+    pod = client.V1Pod(
+        api_version="v1",
+        kind="Pod",
+        metadata=metadata,
+        spec=spec
+    )
+
+    # Create the pod
+    batch_v1.create_namespaced_pod(namespace="default", body=pod)
+
     # =================  Split Job  ================= #
 
     split_job_name = f"split-job-{project_id}"
