@@ -92,6 +92,8 @@ export default function ProjectPage() {
   
   const [projects, setProjects] = useState([]); 
   
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  
   useEffect(() => {
     // Fetch projects when the component mounts
     async function fetchProjects() {
@@ -109,8 +111,9 @@ export default function ProjectPage() {
     fetchProjects();
   }, []);
 
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, id) => {
     setOpen(event.currentTarget);
+    setSelectedProjectId(id); 
   };
 
   const handleCloseMenu = () => {
@@ -170,7 +173,10 @@ export default function ProjectPage() {
   const filteredProjects = applySortFilter(projects, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredProjects.length && !!filterName;
-
+  
+  const handleDetailsButton = () => {
+    navigate(`/dashboard/projects/${selectedProjectId}`);
+  };
   return (
     <>
       <Helmet>
@@ -204,13 +210,12 @@ export default function ProjectPage() {
                 />
                 <TableBody>
                   {filteredProjects.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((project) => {
-                    const { id, name, dataset, size, model, state } = project;
-                    const selectedProject = selected.indexOf(id) !== -1;
-
+                    const { _id, name, dataset, size, model, state } = project;
+                    const selectedProject = selected.indexOf(_id) !== -1;
                     return (
-                      <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedProject}>
+                      <TableRow hover key={_id} tabIndex={-1} role="checkbox" selected={selectedProject}>
                         <TableCell padding="checkbox">
-                          <Checkbox checked={selectedProject} onChange={(event) => handleClick(event, id)} />
+                          <Checkbox checked={selectedProject} onChange={(event) => handleClick(event, _id)} />
                         </TableCell>
 
                         <TableCell component="th" scope="row" padding="none">
@@ -230,7 +235,7 @@ export default function ProjectPage() {
                         </TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                          <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, _id)}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -279,7 +284,7 @@ export default function ProjectPage() {
           />
         </Card>
       </Container>
-
+      
       <Popover
         open={Boolean(open)}
         anchorEl={open}
@@ -298,6 +303,10 @@ export default function ProjectPage() {
           },
         }}
       >
+        <MenuItem onClick={handleDetailsButton}>
+          <Iconify icon={'eva:eye-outline'} sx={{ mr: 2 }} />
+          Details
+        </MenuItem>
         <MenuItem>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
