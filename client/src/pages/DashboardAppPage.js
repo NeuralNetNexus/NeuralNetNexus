@@ -38,15 +38,15 @@ export default function DashboardAppPage() {
   const { id } = useParams();
   const [trainAccuracy, setTrainAccuracy] = useState(null);
   const [currentState, setCurrentState] = useState("Pending");
-  const [nSplit, setNSplit] = useState('20');
+  const [nSplit, setNSplit] = useState('-');
   const [name, setName] = useState('-');
   const [expanded, setExpanded] = useState(false);
   const [graphData, setGraphData] = useState([]);
 
-  const [accuracy_avg, setAvgAccuracy] = useState('20');
-  const [precision, setPrecision] = useState('20');
-  const [recall, setRecall] = useState('20');
-  const [scoreF1, setF1Score] = useState('20');
+  const [accuracy_avg, setAvgAccuracy] = useState('-');
+  const [precision, setPrecision] = useState('-');
+  const [recall, setRecall] = useState('-');
+  const [scoreF1, setF1Score] = useState('-');
   
   const [files, setFiles] = useState([]);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -188,11 +188,11 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={4} paddingBottom={10}>
 
-          <Grid item xs={12} sm={6} md={6}>
+          <Grid item xs={12} sm={6} md={nSplit !== "-" ? 6 : 12}>
             <AppWidgetSummary title="Status" text={currentState} color={currentState ? 'warning' : 'error'} icon={'ant-design:info-outlined'} />
           </Grid>
           
-          <Grid item xs={12} sm={6} md={6}>
+          <Grid item xs={12} sm={6} md={nSplit !== "-" ? 6 : 0}>
             <AppWidgetSummary title="Number of Splits" text={nSplit} color="info" icon={'ant-design:split-cells-outlined'} />
           </Grid>
 
