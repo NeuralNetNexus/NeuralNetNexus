@@ -135,8 +135,7 @@ def main():
     # default location.
     config.load_incluster_config()
     batch_v1 = client.BatchV1Api()
-    
-    # {1} -> é o ID do projeto
+
     # Define the affinity
     affinity = client.V1Affinity(
         node_affinity=client.V1NodeAffinity(
@@ -145,7 +144,7 @@ def main():
                     client.V1NodeSelectorTerm(
                         match_expressions=[
                             client.V1NodeSelectorRequirement(
-                                key="computing",
+                                key="helper",
                                 operator="In",
                                 values=["yessir"]
                             )
@@ -155,31 +154,48 @@ def main():
             )
         )
     )
+    split_job_name = f"split-job-{project_id}"
+    env_vars = {"PROJECT_ID": project_id}
+
+    env = []
+    if env_vars is not None:
+        for name, value in env_vars.items():
+            env.append(client.V1EnvVar(name=name, value=str(value)))
+    
+    volume_mounts = [client.V1VolumeMount(name="datasets-data", mount_path="/app/datasets")]
 
     # Define the container
     container = client.V1Container(
-        name="nginx",
-        image="nginx",
-        image_pull_policy="IfNotPresent"
+        name="split",
+        image="rafaelxokito/neuralnetnexussplit:latest",
+        image_pull_policy="IfNotPresent",
+        env=env if env else None,
+        volume_mounts=volume_mounts,
     )
+
+    volumes = [client.V1Volume(
+        name="datasets-data",
+        persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-datasets")
+    )]
 
     # Define the pod spec
     pod_spec = client.V1PodSpec(
         containers=[container],
         restart_policy="Never",
-        affinity=affinity
+        # affinity=affinity,
+        volumes=volumes,
     )
 
     # Define the job spec
     job_spec = client.V1JobSpec(
         template=client.V1PodTemplateSpec(
-            metadata=client.V1ObjectMeta(name="nginx-job"),
+            metadata=client.V1ObjectMeta(name=split_job_name),
             spec=pod_spec
         )
     )
 
     # Define the job metadata
-    metadata = client.V1ObjectMeta(name="nginx-job")
+    metadata = client.V1ObjectMeta(name=split_job_name)
 
     # Define the job
     job = client.V1Job(
@@ -191,35 +207,104 @@ def main():
 
     # Create the job
     batch_v1.create_namespaced_job(namespace="default", body=job)
+    
+    # {1} -> é o ID do projeto
+    # Define the affinity
+    # affinity = client.V1Affinity(
+    #     node_affinity=client.V1NodeAffinity(
+    #         required_during_scheduling_ignored_during_execution=client.V1NodeSelector(
+    #             node_selector_terms=[
+    #                 client.V1NodeSelectorTerm(
+    #                     match_expressions=[
+    #                         client.V1NodeSelectorRequirement(
+    #                             key="helper",
+    #                             operator="In",
+    #                             values=["yessir"]
+    #                         )
+    #                     ]
+    #                 )
+    #             ]
+    #         )
+    #     )
+    # )
 
-    # =================  Split Job  ================= #
+    # split_job_name = f"split-job-{project_id}"
+    # env_vars = {"PROJECT_ID": project_id}
 
-    split_job_name = f"split-job-{project_id}"
-    image_name = "rafaelxokito/neuralnetnexussplit:latest"
-    env_vars = {"PROJECT_ID": project_id}
+    # env = []
+    # if env_vars is not None:
+    #     for name, value in env_vars.items():
+    #         env.append(client.V1EnvVar(name=name, value=str(value)))
 
-    split_job = create_job_object(split_job_name, image_name, env_vars)
-    create_job(batch_v1, split_job)
-    get_job_status(batch_v1, split_job_name)
+    # volume_mounts, volumes = create_volume_mounts("split")
 
-    # =================  Training Jobs  ================= #
+    # # Define the container
+    # container = client.V1Container(
+    #     name=split_job_name,
+    #     image="rafaelxokito/neuralnetnexussplit:latest",
+    #     image_pull_policy="IfNotPresent",
+    #     volume_mounts=volume_mounts if volume_mounts else None,
+    #     env=env if env else None,
+    # )
 
-    train_job_name = f"train-job-{project_id}"
-    image_name = "rafaelxokito/neuralnetnexustrain:latest"
-    n_splits = requests.api.get(f"http://backend-service/projects/{project_id}").json()["project"]["n_splits"]
+    # # Define the pod spec
+    # pod_spec = client.V1PodSpec(
+    #     containers=[container],
+    #     restart_policy="Never",
+    #     affinity=affinity,
+    #     volumes=volumes if volumes else None
+    # )
 
-    env_vars = {"PROJECT_ID": project_id, "MODEL": model}
-    train_job = create_job_object(train_job_name, image_name, env_vars, completions=n_splits, parallelism=n_splits)
-    create_job(batch_v1, train_job)
-    get_job_status(batch_v1, train_job_name)
+    # # Define the job spec
+    # job_spec = client.V1JobSpec(
+    #     template=client.V1PodTemplateSpec(
+    #         metadata=client.V1ObjectMeta(name=split_job_name),
+    #         spec=pod_spec
+    #     )
+    # )
 
-    # =================  Aggregator Job  ================= #
+    # # Define the job metadata
+    # metadata = client.V1ObjectMeta(name=split_job_name)
 
-    aggregator_job_name = f"aggregator-job-{project_id}"
-    image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
-    aggregator_job = create_job_object(aggregator_job_name, image_name, env_vars)
-    create_job(batch_v1, aggregator_job)
-    get_job_status(batch_v1, aggregator_job_name)
+    # # Define the job
+    # job = client.V1Job(
+    #     api_version="batch/v1",
+    #     kind="Job",
+    #     metadata=metadata,
+    #     spec=job_spec
+    # )
+
+    # # Create the job
+    # batch_v1.create_namespaced_job(namespace="default", body=job)
+
+    # # =================  Split Job  ================= #
+
+    # split_job_name = f"split-job-{project_id}"
+    # image_name = "rafaelxokito/neuralnetnexussplit:latest"
+    # env_vars = {"PROJECT_ID": project_id}
+
+    # # split_job = create_job_object(split_job_name, image_name, env_vars)
+    # # create_job(batch_v1, split_job)
+    # get_job_status(batch_v1, split_job_name)
+
+    # # =================  Training Jobs  ================= #
+
+    # train_job_name = f"train-job-{project_id}"
+    # image_name = "rafaelxokito/neuralnetnexustrain:latest"
+    # n_splits = requests.api.get(f"http://backend-service/projects/{project_id}").json()["project"]["n_splits"]
+
+    # env_vars = {"PROJECT_ID": project_id, "MODEL": model}
+    # train_job = create_job_object(train_job_name, image_name, env_vars, completions=n_splits, parallelism=n_splits)
+    # create_job(batch_v1, train_job)
+    # get_job_status(batch_v1, train_job_name)
+
+    # # =================  Aggregator Job  ================= #
+
+    # aggregator_job_name = f"aggregator-job-{project_id}"
+    # image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
+    # aggregator_job = create_job_object(aggregator_job_name, image_name, env_vars)
+    # create_job(batch_v1, aggregator_job)
+    # get_job_status(batch_v1, aggregator_job_name)
 
 if __name__ == '__main__':
     main()
