@@ -1,14 +1,10 @@
 from os import getenv
 from time import sleep
 import requests
-import sys
 
-import socketio
 import yaml
 
 from kubernetes import client, config
-
-sio = socketio.Client()
 
 project_id = getenv('PROJECT_ID')
 model = getenv('MODEL')
@@ -50,52 +46,25 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
     # Define the job's template
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": job_name}),
-        spec=client.V1PodSpec(restart_policy="OnFailure", 
-                              containers=[container], 
-                              volumes=volumes if volumes else None),
+        spec=client.V1PodSpec(restart_policy="Never", containers=[container], volumes=volumes if volumes else None),
     )
 
     # Define the job's spec
     if completions and parallelism:
-        terms = client.V1NodeSelectorTerm(
-            match_expressions=[
-                {'key': 'computing', 'operator': 'In', 'values': ['yes']}
-            ]
-        )
-        node_selector = client.V1NodeSelector(node_selector_terms=[terms])
-        node_affinity = client.V1NodeAffinity(
-            required_during_scheduling_ignored_during_execution=node_selector
-        )
-        affinity = client.V1Affinity(node_affinity=node_affinity)
-
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             completion_mode="Indexed",
             completions=completions,
             parallelism=parallelism,
             template=template,
-            backoff_limit=4
+            backoff_limit=4,
         )
     else:
-        terms = client.V1NodeSelectorTerm(
-            match_expressions=[
-                {'key': 'helper', 'operator': 'In', 'values': ['yes']}
-            ]
-        )
-        node_selector = client.V1NodeSelector(node_selector_terms=[terms])
-        node_affinity = client.V1NodeAffinity(
-            preferred_during_scheduling_ignored_during_execution=[node_selector]
-        )
-        affinity = client.V1Affinity(node_affinity=node_affinity)
-
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             template=template,
-            backoff_limit=4
+            backoff_limit=4,
         )
-
-    # Don't forget to assign the affinity to the template.spec
-    template.spec.affinity = affinity
 
     # Instantiate the job object
     job = client.V1Job(
@@ -131,13 +100,7 @@ def main():
     
     # {1} -> é o ID do projeto
 
-    sio.connect(f'ws://socket-service', namespaces=['/'])
-    sio.emit('joinProject', {'projectId': project_id})
     # =================  Split Job  ================= #
-
-    # Update the state of the project to "[1/4] Splitting Dataset"
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[1/4] Splitting Dataset"})
-    sio.emit('projectState', {'projectId': project_id, 'state': '[1/4] Splitting Dataset'})
 
     split_job_name = f"split-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexussplit:latest"
@@ -149,13 +112,9 @@ def main():
 
     # =================  Training Jobs  ================= #
 
-    # Update the state of the project to "[2/4] Distributed Training"
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[2/4] Distributed Training"})
-    sio.emit('projectState', {'projectId': project_id, 'state': '[2/4] Distributed Training'})
-
     train_job_name = f"train-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexustrain:latest"
-    n_splits = requests.get(f"http://backend-service/projects/{project_id}").json()["project"]["n_splits"]
+    n_splits = requests.api.get(f"http://backend-service/projects/{project_id}").json()["project"]["n_splits"]
 
     env_vars = {"PROJECT_ID": project_id, "MODEL": model}
     train_job = create_job_object(train_job_name, image_name, env_vars, completions=n_splits, parallelism=n_splits)
@@ -164,22 +123,11 @@ def main():
 
     # =================  Aggregator Job  ================= #
 
-    # Update the state of the project to "aggregating (3-4)"
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[3/4] Aggregating"})
-    sio.emit('projectState', {'projectId': project_id, 'state': '[3/4] Aggregating'})
-
     aggregator_job_name = f"aggregator-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
     aggregator_job = create_job_object(aggregator_job_name, image_name, env_vars)
     create_job(batch_v1, aggregator_job)
     get_job_status(batch_v1, aggregator_job_name)
 
-    # Update the state of the project to "finished"
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[4/4] Done"})
-    sio.emit('projectState', {'projectId': project_id, 'state': '[4/4] Done'})
-
-    
-
 if __name__ == '__main__':
     main()
-    sys.exit(0)
