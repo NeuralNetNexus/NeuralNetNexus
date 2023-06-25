@@ -14,18 +14,36 @@ import models
 import random
 from torch.utils.data import random_split
 import shutil
+import socketio
+from kubernetes import client, config
 
 
+config.load_kube_config()
+
+# Create an instance of the Kubernetes API client
+api_client = client.CoreV1Api()
+
+# Retrieve the pod name from the environment variable
+pod_name = os.getenv("HOSTNAME")
+
+# Retrieve the namespace from the pod's service account token
+namespace_path = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+with open(namespace_path, "r") as file:
+    namespace = file.read()
+
+project_id = os.getenv('PROJECT_ID')
+job_completion_index = os.getenv('JOB_COMPLETION_INDEX')
+
+
+sio = socketio.Client()
+sio.connect('ws://socket-service')
+sio.emit('joinProject', project_id)
 
 
 def pil_loader(path):
     return Image.open(path).convert('RGB')
 
-project_id = os.getenv('PROJECT_ID')
-job_comptetion_index = os.getenv('JOB_COMPLETION_INDEX')
-
-dataset_name = f"/app/datasets/{project_id}_{job_comptetion_index+1}"
-
+dataset_name = f"/app/datasets/{project_id}_{job_completion_index+1}"
 
 # Datasets
 dataset_collection = [
@@ -110,8 +128,6 @@ for i, dataset in enumerate(dataset_collection):
         elif neuralnet == "EfficientNet V2S":
             model_collection = [models.EfficientNet(num_classes=num_classes, num_channels=dataset_channels),]    
                 
-
-        model_collection = [models.SqueezeNet(num_classes=num_classes, num_channels=dataset_channels)]
 
         for k, model in enumerate(model_collection):
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -260,7 +276,23 @@ for i, dataset in enumerate(dataset_collection):
                     with open(os.path.join(history_path, 'train.log'), 'a+') as the_file:
                         the_file.write(log + "\n\n")
 
+                # Retrieve pod metrics
+                metrics = api_client.read_namespaced_pod_metrics(pod_name, namespace)
 
+                # Find the CPU usage for the first container in the pod
+                container_metrics = metrics.containers[0]
+                cpu_usage = container_metrics.usage["cpu"]
+                ram_usage = container_metrics.usage["memory"]
+
+            sio.emit('trainingMetrics', { "train_index": job_completion_index, 
+                                            "epoch": epoch_i+1,
+                                            "train_accuracy": avg_train_acc*100,
+                                                "train_loss": avg_train_loss,
+                                                "val_accuracy": avg_valid_acc*100,
+                                                "val_loss": avg_valid_loss,
+                                                "cpu_usage": cpu_usage,
+                                                "ram_usage": ram_usage
+                                                })
 
             history = np.array(history)
 
