@@ -34,7 +34,7 @@ export default function DashboardAppPage() {
     const fetchData = async () => {
       try {
         const response = await axios.get(`/api/projects/${id}`);
-        const project = response.data;
+        const project = response.data.project;
         console.log(project);
   
         setTrainAccuracy(project.aggregated_accuracy);
