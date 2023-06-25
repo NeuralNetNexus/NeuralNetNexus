@@ -228,7 +228,10 @@ async (req, res) => {
     for (let i = 0; i < splits; i++) {
       project.splits.push({
         id: i + 1,
-        accuracies: []
+        train_accuracies: [],
+        val_accuracies: [],
+        train_losses: [],
+        val_losses: []
       })
     }
     await project.save()
@@ -267,25 +270,17 @@ async (req, res) => {
 });
 
 // PATCH - Add accuracy to split
-app.patch("/projects/:projectId/splits/:splitId/accuracies", [
-  check("accuracy")
-      .notEmpty().withMessage("Accuracies are required")
-      .isArray().withMessage("Accuracies must be a float array")
-      .custom((value) => {
-        for (const num of value) {
-          if (typeof num !== "number" || num < 0 || num > 100) {
-            throw new Error("Accuracy must be between 0 and 100");
-          }
-        }
-        return true;
-      })
-  ], async (req, res) => {
+app.patch("/projects/:projectId/splits/:splitId/metrics",
+async (req, res) => {
     const { projectId, splitId } = req.params;
-    const { accuracy } = req.body;
+    const { train_accuracy, val_accuracy, train_loss, val_loss } = req.body;
 
     try {
       const project = await Project.findOne({ _id: projectId });
-      project.splits[splitId].accuracies.push(accuracy);
+      project.splits[splitId].train_accuracies.push(train_accuracy);
+      project.splits[splitId].val_accuracies.push(val_accuracy);
+      project.splits[splitId].train_losses.push(train_loss);
+      project.splits[splitId].val_losses.push(val_loss);
 
       await project.save();
       res.json({ project: project });
