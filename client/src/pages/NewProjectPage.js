@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Select, MenuItem, InputLabel, Button, FormControl, TextField, LinearProgress } from '@mui/material';
 import io from 'socket.io-client';
-const socket = io("ws://localhost:3002");
+const socket = io(window.location.host);
 
 const ProjectPage = () => {
     const navigate = useNavigate();
@@ -38,7 +38,7 @@ const ProjectPage = () => {
           
         console.log(dataset)
         try {
-            const response = await axios.post('api/upload', formData, {
+            const response = await axios.post('/api/upload', formData, {
               headers: {
                 'Content-Type': 'multipart/form-data',
               },
