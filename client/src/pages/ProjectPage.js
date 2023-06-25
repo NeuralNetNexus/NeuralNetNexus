@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
@@ -98,7 +97,7 @@ export default function ProjectPage() {
     // Fetch projects when the component mounts
     async function fetchProjects() {
       try {
-        await axios.get("http://localhost:3001/projects").then(response => {
+        await axios.get("http://__SERVER_URI__/projects").then(response => {
           setProjects(response.data.projects);
         })
         .catch(error => {
