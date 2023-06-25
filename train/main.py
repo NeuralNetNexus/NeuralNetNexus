@@ -129,8 +129,6 @@ for i, dataset in enumerate(dataset_collection):
             model_collection = [models.EfficientNet(num_classes=num_classes, num_channels=dataset_channels),]    
                 
 
-        model_collection = [models.SqueezeNet(num_classes=num_classes, num_channels=dataset_channels)]
-
         for k, model in enumerate(model_collection):
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
