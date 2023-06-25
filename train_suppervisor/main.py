@@ -61,7 +61,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
             required_during_scheduling_ignored_during_execution=node_selector
         )
         affinity = client.V1Affinity(node_affinity=node_affinity)
-
+        template.spec.affinity = affinity
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             completion_mode="Indexed",
@@ -81,7 +81,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
             required_during_scheduling_ignored_during_execution=node_selector
         )
         affinity = client.V1Affinity(node_affinity=node_affinity)
-
+        template.spec.affinity = affinity
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
             template=template,
