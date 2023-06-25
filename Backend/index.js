@@ -66,7 +66,7 @@ app.get("/", (req, res) => {
 app.get("/projects", 
 async (req, res) => {
   try{
-    const projects= await Project.find();
+    const projects = await Project.find().sort({createdAt: -1});
     res.json({ projects: projects});
   } catch (err) {
     res.status(500).json({ 

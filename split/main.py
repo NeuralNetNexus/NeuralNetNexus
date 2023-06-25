@@ -4,6 +4,7 @@ import shutil
 import glob
 import requests
 import socketio
+import sys
 
 sio = socketio.Client()
 
@@ -90,10 +91,12 @@ def split_zip(pvc_path, project_id):
                     shutil.copy(image_path, split_dir)
 
     shutil.rmtree(dataset_path)
-    print(f"Progress: 100%")
 
 
 if __name__ == '__main__':
     pvc_path = "/app/datasets"
 
     split_zip(pvc_path, project_id)
+    sio.disconnect()
+    print(f"Progress: 100%")
+    sys.exit()

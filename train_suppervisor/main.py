@@ -50,7 +50,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
     # Define the job's template
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": job_name}),
-        spec=client.V1PodSpec(restart_policy="Never", 
+        spec=client.V1PodSpec(restart_policy="OnFailure", 
                               containers=[container], 
                               volumes=volumes if volumes else None),
     )
@@ -154,6 +154,8 @@ def main():
     # Update the state of the project to "finished"
     requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[4/4] Done"})
     sio.emit('projectState', {'projectId': project_id, 'state': '[4/4] Done'})
+
+    
 
 if __name__ == '__main__':
     main()
