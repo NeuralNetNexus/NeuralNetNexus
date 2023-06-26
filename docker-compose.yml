@@ -21,11 +21,23 @@ services:
       - ./Backend/datasets:/usr/app/datasets
       - ./Backend/models:/usr/app/models
 
+  bucket:
+    image: bucket
+    build: ./bucket
+    ports:
+      - "3003:3003"
+
   socket-server:
     image: socket-server
     build: ./socket-server
     ports:
       - "3002:3002"
+
+  traindummy:
+    image: traindummy
+    build: ./traindummy
+    environment:
+      - WSSERVER=socket-server
 
   database:
     image: mongo
