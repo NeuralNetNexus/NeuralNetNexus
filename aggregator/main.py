@@ -53,13 +53,11 @@ def train(model_dir, model_name):
         params[k] /= n_models
 
     # Load averaged parameters into the model architecture
-    global model_avg
     model_avg = get_model(model_name)
     model_avg.load_state_dict(params)
 
     # Save the averaged model
     torch.save(model_avg.state_dict(), f'{dest_dir}/model_avg.pth')
-
 
 
 def compute_metrics(confusion_matrix):
@@ -76,9 +74,8 @@ def compute_metrics(confusion_matrix):
 def pil_loader(path):
     return Image.open(path).convert('RGB')
 
-def test():
-    test_dataset = { "path": f"/app/datasets/{project_id}_test", "channels": 3 }
-    dataset_test_obj = datasets.ImageFolder(root=test_dataset['path'], transform=image_transforms["train"], loader=lambda path: pil_loader(path))
+def test(test_dataset, model, dest_dir):
+    dataset_test_obj = datasets.ImageFolder(root=test_dataset, transform=image_transforms["train"], loader=lambda path: pil_loader(path))
     test_loader = DataLoader(dataset_test_obj, batch_size=32, shuffle=True)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -97,7 +94,7 @@ def test():
     with torch.no_grad():
 
         # Set to evaluation mode
-        model_avg.eval()
+        model.eval()
 
         # Validation loop
         for inputs, labels in test_loader:
@@ -105,7 +102,7 @@ def test():
             labels = labels.to(device)
 
             # Forward pass - compute outputs on input data using the model
-            outputs = model_avg(inputs)
+            outputs = model(inputs)
 
             # Compute loss
             loss = criterion(outputs, labels)
@@ -170,5 +167,7 @@ def test():
 if __name__ == '__main__':
 
     dest_dir =  f"/app/models/{project_id}"
-    train(dest_dir, model)
-    test()
+    model = train(dest_dir, model)
+
+    test_dataset = f"/app/datasets/{project_id}_test"
+    test(test_dataset, model, dest_dir)

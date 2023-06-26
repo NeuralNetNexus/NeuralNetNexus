@@ -6,10 +6,9 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const { check, validationResult } = require("express-validator");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const app = express();
 const bodyParser = require("body-parser");
+const FormData = require('form-data');
 const k8s = require('@kubernetes/client-node');
 const Project = require("./models.project");
 const k8sObjects = require('./kubernetes-objects');
@@ -42,7 +41,7 @@ app.use(
 );
 
 const upload = multer({
-  dest: "/usr/app/datasets/",
+  dest: "/usr/app/",
   limits: { fileSize: 200 * 1024 * 1024 }, // 200MB
   fileFilter: function (req, file, cb) {
     if (path.extname(file.originalname) == ".zip") {
@@ -193,16 +192,22 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
     const project = new Project(projectInfo);
     const savedProject = await project.save();
     const projectId = savedProject._id;
-
-    // Rename the ZIP file with modified name format
-    const modifiedFileName = `${projectId}${fileExtension}`;
-    const modifiedFilePath = path.join(req.file.destination, modifiedFileName);
-    fs.rename(zipFilePath, modifiedFilePath, (error) => {
-      if (error) {
-        console.error('Error renaming dataset file:', error);
-      } else {
-        console.log('New dataset saved as:', modifiedFileName);
-      }
+    
+    // Store Dataset in Bucket
+    const fileData = fs.readFileSync(zipFilePath);
+    const formData = new FormData();
+    const filename = `${projectId}${fileExtension}`;
+    formData.append('file', fileData, { filename: filename });
+    axios.post("http://bucket-service/datasets", formData, {
+      headers: formData.getHeaders()
+    })
+    .then(response => {
+      console.log('File uploaded successfully');
+      // Delete the file after upload
+      fs.unlinkSync(modifiedFilePath);
+    })
+    .catch(error => {
+      console.error('Error uploading file:', error);
     });
 
     // Trigger the train-suppervisor job

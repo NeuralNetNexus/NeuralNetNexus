@@ -8,14 +8,24 @@ import sys
 
 sio = socketio.Client()
 
-project_id = os.getenv('PROJECT_ID')    
+project_id = os.getenv('PROJECT_ID')
     
 sio.connect('ws://socket-service')
-sio.emit('joinProject', {"project_id": project_id})
+sio.emit('joinProject', project_id)
 
 def unzip_folder(zip_path, extract_path):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(extract_path)
+
+def zip_folder(folder_path, output_path):
+    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                zipf.write(file_path, os.path.relpath(file_path, folder_path))
+            for dir in dirs:
+                dir_path = os.path.join(root, dir)
+                zipf.write(dir_path, os.path.relpath(dir_path, folder_path))
 
 def count_images(folder_path):
     image_files = glob.glob(os.path.join(folder_path, '**/*.jpg'), recursive=True)
@@ -40,7 +50,8 @@ def split_zip(pvc_path, project_id):
     test_path = os.path.join(dataset_path, "testing")
     test_path = test_path if os.path.exists(test_path) else os.path.join(dataset_path, "test")
 
-    shutil.copytree(test_path, os.path.join(pvc_path, f"{project_id}_test"))
+    #shutil.copytree(test_path, os.path.join(pvc_path, f"{project_id}_test"))
+    zip_folder(test_path, os.path.join(pvc_path, f"{project_id}_test.zip"))
 
     # Calculate the ratio and split size based on total images
     total_images = count_images(train_path)
@@ -51,7 +62,7 @@ def split_zip(pvc_path, project_id):
             'splits': ratio
         }
         requests.patch(f"http://backend-service/projects/{project_id}/n-splits", json=data)
-        sio.emit('projectStatus', {'projectId': project_id, "n_batch": ratio})
+        sio.emit('projectStatus', { "n_batch": ratio})
 
     except:
         print("Error sending the number of splits to the backend-service or websocket")
@@ -64,7 +75,7 @@ def split_zip(pvc_path, project_id):
     for idx, class_name in enumerate(class_list):
         class_path = os.path.join(train_path, class_name)
 
-        print(f"Progress: {idx / len(class_list)}%")
+        print(f"Progress: {idx / len(class_list) * 100}%")
         
         # Get the list of images in the class folder
         images_list = os.listdir(class_path)
@@ -76,7 +87,8 @@ def split_zip(pvc_path, project_id):
         for split_num in range(1, ratio + 1):
 
             # Create a new directory
-            split_dir = os.path.join(pvc_path, f"{project_id}_{split_num}/{class_name}")
+            split_name = f"{project_id}_{split_num}/{class_name}"
+            split_dir = os.path.join(pvc_path, split_name)
             os.makedirs(split_dir, exist_ok=True)
             
             # Determine the range of images for the current split
@@ -90,6 +102,27 @@ def split_zip(pvc_path, project_id):
                     image_path = os.path.join(class_path, image_name)
                     shutil.copy(image_path, split_dir)
 
+    print(f"Progress: 100%")
+    print(f"Zipping results...")
+    for split_num in range(1, ratio + 1):
+        path = os.path.join(pvc_path, f"{project_id}_{split_num}")
+        zip_path = "{path}.zip"
+        zip_folder(path, zip_path)
+
+        # Send Result to Bucket Service
+        with open(zip_path, 'rb') as file:
+            files = {'file': file}
+            response = requests.post("http://bucket-service/datasets", files=files)
+        
+        # Check the response status
+        if response.status_code == requests.codes.ok:
+            print(f'File {zip_path} uploaded successfully.')
+        else:
+            print(f'Error occurred while uploading the file {zip_path}. Status code:', response.status_code)
+            sys.exit(5)
+
+        shutil.rmtree(path)
+
     shutil.rmtree(dataset_path)
 
 
@@ -98,5 +131,5 @@ if __name__ == '__main__':
 
     split_zip(pvc_path, project_id)
     sio.disconnect()
-    print(f"Progress: 100%")
+    print(f"Done!")
     sys.exit()
