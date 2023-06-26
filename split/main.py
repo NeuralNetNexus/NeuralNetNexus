@@ -62,7 +62,7 @@ def split_zip(pvc_path, project_id):
             'splits': ratio
         }
         requests.patch(f"http://backend-service/projects/{project_id}/n-splits", json=data)
-        sio.emit('projectStatus', {"projectId": project_id, "n_batch": ratio})
+        sio.emit('splitNumber', {"projectId": project_id, "n_batch": ratio})
 
     except:
         print("Error sending the number of splits to the backend-service or websocket")
