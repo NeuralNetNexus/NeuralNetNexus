@@ -118,6 +118,27 @@ async (req, res) => {
 });
 
 
+app.get("/models/:filename", async (req, res) => {
+  const { filename } = req.params;
+  try {
+
+    const response = await axios.get(`http://bucket-service/models/${filename}`, { responseType: 'stream' });
+
+    // Set the headers for the response
+    const headers = {
+      'Content-Type': response.headers['content-type'],
+      'Content-Length': response.headers['content-length'],
+    };
+    res.writeHead(200, headers);
+
+    response.data.pipe(res);
+  } catch (err) {
+    res.status(500).json({
+      error: 'GET_PROJECT_FAILED',
+      message: 'Error when retrieving project'
+    });
+  }
+});
 
 // GET - retrieve project's file by name
 app.get("/projects/:projectId/files/:filename",
@@ -127,7 +148,7 @@ async (req, res) => {
     let file = `/usr/app/models/${projectId}/${filename}.`
     if(filename.includes("confusion_matrix")){
       file = file + "png";
-    }else{
+    } else{
       file = file + "pth";
     }
     res.sendFile(file);
