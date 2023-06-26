@@ -104,11 +104,11 @@ export default function DashboardAppPage() {
         });
   
         socket.on('projectState', (values) => {
-          setCurrentState(values);
+          setCurrentState(values.state);
         });
   
         socket.on('splitNumber', (values) => {
-          setNSplit(values);
+          setNSplit(values.n_batch);
         });
 
         socket.on('aggregatorMetrics', (values) => {
