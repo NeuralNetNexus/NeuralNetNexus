@@ -10,14 +10,31 @@ from torchvision import datasets, transforms
 import itertools
 import matplotlib.pyplot as plt
 import socketio
+import requests
+import sys
+import zipfile
 
 project_id = os.getenv('PROJECT_ID')
+n_splits = os.getenv('N_SPLITS')
 model = os.getenv('MODEL')
+
+model_files = []
+
+# Get Models from Bucket
+for i in range(1, n_splits+1):
+    response = requests.get(f"http://bucket-service/models/{project_id}_{i}.pth")
+    if response.status_code == requests.codes.ok:
+        model_name = f"/app/{project_id}_{i}.pth"
+        with open(model_name, 'wb') as file:
+            file.write(response.content)
+            model_files.append(model_name)
+    else:
+        print('Error occurred while downloading the dataset. Status code:', response.status_code)
+        sys.exit(5)
 
 sio = socketio.Client()
 sio.connect('ws://socket-service')
 sio.emit('joinProject', project_id)
-
 
 def get_model(model_name):
     if model_name == 'VGG16':
@@ -30,9 +47,7 @@ def get_model(model_name):
         model = models.squeezenet1_0(pretrained=False)
     return model
 
-def train(model_dir, model_name):
-    model_files = [f for f in os.listdir(model_dir) if f.endswith('.pth')]
-
+def train(model_files, model_name):
     model = get_model(model_name)
 
     params = model.state_dict()
@@ -41,8 +56,7 @@ def train(model_dir, model_name):
         params[k] = torch.zeros_like(params[k])
 
     n_models = len(model_files)
-    for f in model_files:
-        model_path = os.path.join(model_dir, f)
+    for model_path in model_files:
         model_state = torch.load(model_path) # load model parameters
 
         for k in params.keys():
@@ -57,7 +71,13 @@ def train(model_dir, model_name):
     model_avg.load_state_dict(params)
 
     # Save the averaged model
-    torch.save(model_avg.state_dict(), f'{dest_dir}/model_avg.pth')
+    saved_model_path = f'/app/model_{project_id}.pth'
+    torch.save(model_avg.state_dict(), saved_model_path)
+
+    # Send Result to Bucket Service
+    with open(saved_model_path, 'rb') as file:
+        files = {'model': file}
+        response = requests.post("http://bucket-service/models", files=files)
 
 
 def compute_metrics(confusion_matrix):
@@ -74,7 +94,7 @@ def compute_metrics(confusion_matrix):
 def pil_loader(path):
     return Image.open(path).convert('RGB')
 
-def test(test_dataset, model, dest_dir):
+def test(test_dataset, model):
     dataset_test_obj = datasets.ImageFolder(root=test_dataset, transform=image_transforms["train"], loader=lambda path: pil_loader(path))
     test_loader = DataLoader(dataset_test_obj, batch_size=32, shuffle=True)
 
@@ -137,7 +157,13 @@ def test(test_dataset, model, dest_dir):
     plt.tight_layout()
     plt.xlabel("Predicted")
     plt.ylabel("Actual")
-    plt.savefig(os.path.join(dest_dir, 'confusion_matrix.png'), bbox_inches="tight")
+    conf_mat_path = f'/app/confusion_matrix_{project_id}.png'
+    plt.savefig(conf_mat_path, bbox_inches="tight")
+
+    # Send Result to Bucket Service
+    with open(conf_mat_path, 'rb') as file:
+        files = {'model': file}
+        response = requests.post("http://bucket-service/models", files=files)
     
     plt.clf()
     
@@ -166,8 +192,22 @@ def test(test_dataset, model, dest_dir):
 
 if __name__ == '__main__':
 
-    dest_dir =  f"/app/models/{project_id}"
-    model = train(dest_dir, model)
+    model = train(model_files, model)
 
-    test_dataset = f"/app/datasets/{project_id}_test"
-    test(test_dataset, model, dest_dir)
+    # Get dataset from bucket
+    response = requests.get(f"http://bucket-service/datasets/{project_id}_test.zip")
+    if response.status_code == requests.codes.ok:
+        with open(f"/app/{project_id}_test.zip", 'wb') as file:
+            file.write(response.content)
+    else:
+        print('Error occurred while downloading the dataset. Status code:', response.status_code)
+        sys.exit(5)
+
+    def unzip_folder(zip_path, extract_path):
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_path)
+
+    unzip_folder(f"/app/{project_id}_test.zip", f"/app/{project_id}_test")
+
+    test_dataset = f"/app/{project_id}_test"
+    test(test_dataset, model)

@@ -280,7 +280,12 @@ for i, dataset in enumerate(dataset_collection):
                 # Save if the model has best accuracy till now
                 if epoch_i == hp["epochs"] - 1:
                     model_ft.load_state_dict(best_model)
-                    torch.save(model_ft, os.path.join(history_path, f'{job_completion_index+1}.pth'))
+                    model_name = os.path.join(history_path, f'{project_id}_{job_completion_index+1}.pth')
+                    torch.save(model_ft, model_name)
+                    # Send Result to Bucket Service
+                    with open(model_name, 'rb') as file:
+                        files = {'model': file}
+                        response = requests.post("http://bucket-service/models", files=files)
 
                 # Retrieve pod metrics
                 metrics = api_client.read_namespaced_pod_metrics(pod_name, namespace)
