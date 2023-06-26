@@ -48,7 +48,7 @@ export default function DashboardAppPage() {
   const [recall, setRecall] = useState('-');
   const [scoreF1, setF1Score] = useState('-');
   
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([`confusion_matrix_${id}.png`, `model_${id}.pth`]);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
 
@@ -66,19 +66,6 @@ export default function DashboardAppPage() {
 
 
   useEffect(() => {
-    async function getFiles() {
-      try {
-        await axios.get(`http://backend-service/projects/${id}/files`).then(response => {
-          setFiles(response.data.files);
-        })
-        .catch(error => {
-          console.error(error);
-        });        
-      } catch (error) {
-        console.error('Error fetching files:', error);
-      }
-    }
-    getFiles()
     
     const fetchData = async () => {
       try {
@@ -316,12 +303,13 @@ export default function DashboardAppPage() {
         ))}
         </Grid>
 
-
+        {precision !== "-" ?
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Grid item xs={12} sm={6} md={6} paddingBottom={10} paddingTop={10}>
-            <img src={`http://backend-service/projects/${id}/files/confusion_matrix`} alt="Confusion Matrix" />
+            <img src={`http://bucket-service/models/${file[0]}`} alt="Confusion Matrix" />
           </Grid>
         </div>
+         : null}
 
         <Typography variant="h5" sx={{ mb: 2 }}>
           Project Files
@@ -338,7 +326,8 @@ export default function DashboardAppPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {files.map((file) => {
+                  {precision !== "-" ?
+                  files.map((file) => {
                     const fileName = file.split(".")[0];
                     if(file.includes("png")){
                       return;
@@ -353,7 +342,7 @@ export default function DashboardAppPage() {
                         </TableCell>
                         <TableCell align="right">
                           <a
-                            href={`http://backend-service/projects/${id}/files/${fileName}`}
+                            href={`http://bucket-service/models/${fileName}`}
                             target="_blank"
                           >
                             <Iconify icon={'eva:download-outline'} sx={{ mr: 2 }} />
@@ -361,7 +350,8 @@ export default function DashboardAppPage() {
                         </TableCell>
                       </TableRow>
                     );
-                  })}
+                  })
+                  : null}
                 </TableBody>
               </Table>
             </TableContainer>
