@@ -125,7 +125,7 @@ def main():
     
     # =================  Split Job  ================= #
 
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[1/4] Splitting Dataset"})
+    requests.patch(f"http://backend-service/projects/{project_id}/state", json={"state": "[1/4] Splitting Dataset"})
     sio.emit('projectState', {'projectId': project_id, 'state': '[1/4] Splitting Dataset'})
 
     split_job_name = f"split-job-{project_id}"
@@ -138,7 +138,7 @@ def main():
 
     # # =================  Training Jobs  ================= #
 
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[2/4] Distributed Training"})
+    requests.patch(f"http://backend-service/projects/{project_id}/state", json={"state": "[2/4] Distributed Training"})
     sio.emit('projectState', {'projectId': project_id, 'state': '[2/4] Distributed Training'})
 
     train_job_name = f"train-job-{project_id}"
@@ -152,7 +152,7 @@ def main():
 
     # # =================  Aggregator Job  ================= #
     
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[3/4] Aggregating"})
+    requests.patch(f"http://backend-service/projects/{project_id}/state", json={"state": "[3/4] Aggregating"})
     sio.emit('projectState', {'projectId': project_id, 'state': '[3/4] Aggregating'})
 
     aggregator_job_name = f"aggregator-job-{project_id}"
@@ -161,7 +161,7 @@ def main():
     create_job(batch_v1, aggregator_job)
     get_job_status(batch_v1, aggregator_job_name)
 
-    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[4/4] Done"})
+    requests.patch(f"http://backend-service/projects/{project_id}/state", json={"state": "[4/4] Done"})
     sio.emit('projectState', {'projectId': project_id, 'state': '[4/4] Done'})
 
 if __name__ == '__main__':
