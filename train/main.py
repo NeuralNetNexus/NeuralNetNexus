@@ -133,7 +133,7 @@ for i, dataset in enumerate(dataset_collection):
         print(valid_data_size)
     
         # Models
-        neuralnet = os.getenv('MODELS')
+        neuralnet = os.getenv('MODEL')
         if neuralnet == "SqueezeNet":
             model_collection = [models.SqueezeNet(num_classes=num_classes, num_channels=dataset_channels)]
         elif neuralnet == "ResNet18":
