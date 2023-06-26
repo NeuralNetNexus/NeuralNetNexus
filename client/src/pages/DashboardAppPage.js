@@ -306,7 +306,7 @@ export default function DashboardAppPage() {
         {precision !== "-" ?
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Grid item xs={12} sm={6} md={6} paddingBottom={10} paddingTop={10}>
-            <img src={`http://bucket-service/models/${files[0]}`} alt="Confusion Matrix" />
+            <img src={`/api/models/${files[0]}`} alt="Confusion Matrix" />
           </Grid>
         </div>
          : null}
@@ -342,7 +342,7 @@ export default function DashboardAppPage() {
                         </TableCell>
                         <TableCell align="right">
                           <a
-                            href={`http://bucket-service/models/${fileName}`}
+                            href={`/api/models/${fileName}`}
                             target="_blank"
                           >
                             <Iconify icon={'eva:download-outline'} sx={{ mr: 2 }} />
