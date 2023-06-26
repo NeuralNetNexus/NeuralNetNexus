@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bucket-deployment
+spec:
+  selector:
+    matchLabels:
+      app: bucket
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: bucket
+    spec:
+      containers:
+      - name: bucket
+        image: docker.io/rafaelxokito/neuralnetnexusbucket:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3003
+        volumeMounts:
+          - name: datasets-data
+            mountPath: /usr/app/datasets
+          - name: models-data
+            mountPath: /usr/app/models
+      nodeSelector:
+        kubernetes.io/role: platform
+      volumes:
+        - name: datasets-data
+          persistentVolumeClaim:
+            claimName: pvc-datasets
+        - name: models-data
+          persistentVolumeClaim:
+            claimName: pvc-models

@@ -44,7 +44,7 @@ app.get('/models', (req, res) => {
     res.status(200).send('Get request received for models.');
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });

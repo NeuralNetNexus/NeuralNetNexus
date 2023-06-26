@@ -17,15 +17,15 @@ services:
       - DATABASE_URI=database
     ports:
       - "3001:3001"
-    volumes:
-      - ./Backend/datasets:/usr/app/datasets
-      - ./Backend/models:/usr/app/models
 
   bucket:
     image: bucket
     build: ./bucket
     ports:
       - "3003:3003"
+    volumes:
+      - ./bucket/datasets:/usr/app/datasets
+      - ./bucket/models:/usr/app/models
 
   socket-server:
     image: socket-server
