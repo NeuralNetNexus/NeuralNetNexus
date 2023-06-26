@@ -198,7 +198,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
     const fileData = fs.readFileSync(zipFilePath);
     const formData = new FormData();
     const filename = `${projectId}${fileExtension}`;
-    formData.append('file', fileData, { filename: filename });
+    formData.append('dataset', fileData, { filename: filename });
     axios.post("http://bucket-service/datasets", formData, {
       headers: formData.getHeaders()
     })
