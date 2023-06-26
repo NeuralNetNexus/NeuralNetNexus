@@ -68,7 +68,7 @@ export default function DashboardAppPage() {
   useEffect(() => {
     async function getFiles() {
       try {
-        await axios.get(`http://localhost:3001/projects/${id}/files`).then(response => {
+        await axios.get(`http://backend-service/projects/${id}/files`).then(response => {
           setFiles(response.data.files);
         })
         .catch(error => {
@@ -319,7 +319,7 @@ export default function DashboardAppPage() {
 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Grid item xs={12} sm={6} md={6} paddingBottom={10} paddingTop={10}>
-            <img src={`http://localhost:3001/projects/${id}/files/confusion_matrix`} alt="Confusion Matrix" />
+            <img src={`http://backend-service/projects/${id}/files/confusion_matrix`} alt="Confusion Matrix" />
           </Grid>
         </div>
 
@@ -353,7 +353,7 @@ export default function DashboardAppPage() {
                         </TableCell>
                         <TableCell align="right">
                           <a
-                            href={`http://localhost:3001/projects/${id}/files/${fileName}`}
+                            href={`http://backend-service/projects/${id}/files/${fileName}`}
                             target="_blank"
                           >
                             <Iconify icon={'eva:download-outline'} sx={{ mr: 2 }} />
