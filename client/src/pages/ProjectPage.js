@@ -97,7 +97,7 @@ export default function ProjectPage() {
     // Fetch projects when the component mounts
     async function fetchProjects() {
       try {
-        await axios.get("http://localhost:3001/projects").then(response => {
+        await axios.get("http://backend-service/projects").then(response => {
           setProjects(response.data.projects);
         })
         .catch(error => {
