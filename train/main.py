@@ -33,7 +33,7 @@ with open(namespace_path, "r") as file:
     namespace = file.read()
 
 project_id = os.getenv('PROJECT_ID')
-job_completion_index = os.getenv('JOB_COMPLETION_INDEX')
+job_completion_index = int(os.getenv('JOB_COMPLETION_INDEX'))
 
 sio = socketio.Client()
 sio.connect('ws://socket-service')
