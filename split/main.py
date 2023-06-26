@@ -111,7 +111,7 @@ def split_zip(pvc_path, project_id):
 
         # Send Result to Bucket Service
         with open(zip_path, 'rb') as file:
-            files = {'file': file}
+            files = {'dataset': file}
             response = requests.post("http://bucket-service/datasets", files=files)
         
         # Check the response status
