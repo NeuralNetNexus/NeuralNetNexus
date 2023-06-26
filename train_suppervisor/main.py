@@ -1,10 +1,14 @@
 from os import getenv
 from time import sleep
 import requests
+import sys
 
+import socketio
 import yaml
 
 from kubernetes import client, config
+
+sio = socketio.Client()
 
 project_id = getenv('PROJECT_ID')
 model = getenv('MODEL')
@@ -116,8 +120,13 @@ def main():
     config.load_incluster_config()
     batch_v1 = client.BatchV1Api()
 
+    sio.connect(f'ws://socket-service', namespaces=['/'])
+    sio.emit('joinProject', {'projectId': project_id})
     
     # =================  Split Job  ================= #
+
+    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[1/4] Splitting Dataset"})
+    sio.emit('projectState', {'projectId': project_id, 'state': '[1/4] Splitting Dataset'})
 
     split_job_name = f"split-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexussplit:latest"
@@ -129,22 +138,31 @@ def main():
 
     # # =================  Training Jobs  ================= #
 
+    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[2/4] Distributed Training"})
+    sio.emit('projectState', {'projectId': project_id, 'state': '[2/4] Distributed Training'})
+
     train_job_name = f"train-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexustrain:latest"
-    n_splits = requests.api.get(f"http://backend-service/projects/{project_id}").json()["project"]["n_splits"]
+    n_splits = requests.get(f"http://backend-service/projects/{project_id}").json()["project"]["n_splits"]
 
-    env_vars = {"PROJECT_ID": project_id, "MODEL": model}
+    env_vars = {"PROJECT_ID": project_id, "MODEL": model, "N_SPLITS": n_splits}
     train_job = create_job_object(train_job_name, image_name, env_vars, completions=n_splits, parallelism=n_splits)
     create_job(batch_v1, train_job)
     get_job_status(batch_v1, train_job_name)
 
     # # =================  Aggregator Job  ================= #
+    
+    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[3/4] Aggregating"})
+    sio.emit('projectState', {'projectId': project_id, 'state': '[3/4] Aggregating'})
 
     aggregator_job_name = f"aggregator-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
     aggregator_job = create_job_object(aggregator_job_name, image_name, env_vars)
     create_job(batch_v1, aggregator_job)
     get_job_status(batch_v1, aggregator_job_name)
+
+    requests.put(f"http://backend-service/projects/{project_id}/state", json={"state": "[4/4] Done"})
+    sio.emit('projectState', {'projectId': project_id, 'state': '[4/4] Done'})
 
 if __name__ == '__main__':
     main()
