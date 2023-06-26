@@ -106,7 +106,7 @@ def split_zip(pvc_path, project_id):
     print(f"Zipping results...")
     for split_num in range(1, ratio + 1):
         path = os.path.join(pvc_path, f"{project_id}_{split_num}")
-        zip_path = "{path}.zip"
+        zip_path = f"{path}.zip"
         zip_folder(path, zip_path)
 
         # Send Result to Bucket Service
