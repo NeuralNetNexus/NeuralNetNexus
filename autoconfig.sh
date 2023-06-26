@@ -11,17 +11,17 @@ microk8s kubectl apply -f kubernetes/roles
 # Add Nodes to Roles
 #microk8s kubectl label nodes neuralnetnexus-desktop kubernetes.io/role=computing
 #microk8s kubectl label nodes raspberrypitwo kubernetes.io/role=helper
-#microk8s kubectl label nodes surface-laptop kubernetes.io/role=helper
 #microk8s kubectl label nodes fedora kubernetes.io/role=platform
 
-# Criar as labels para o computing
-kubectl label nodes neuralnetnexus-desktop computing=yessir
+kubectl label nodes raspberrypitwo helper=yes
+kubectl label nodes ubuntu helper=yes
+kubectl label nodes neuralnetnexus-desktop computing=yes
+kubectl label nodes neuralnetnexus-desktop computing=yes
 
-# Criar as labels para o auxilliar
-kubectl label nodes surface-laptop helper=yessir
-kubectl label nodes ubuntu helper=yessir
-
-kubectl label nodes ubuntu helper=yessir
+kubectl label nodes ubuntu kubernetes.io/role=computing
+kubectl label nodes ubuntu computing=yessir
+kubectl label nodes ubuntu2004 kubernetes.io/role=computing
+kubectl label nodes ubuntu2004 computing=yessir
 
 # Create objects
 microk8s kubectl apply -f kubernetes/configmaps/*
