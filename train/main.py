@@ -17,6 +17,7 @@ import socketio
 from kubernetes import client, config
 import requests
 import sys
+import zipfile
 
 config.load_kube_config()
 
@@ -34,20 +35,35 @@ with open(namespace_path, "r") as file:
 project_id = os.getenv('PROJECT_ID')
 job_completion_index = os.getenv('JOB_COMPLETION_INDEX')
 
-
 sio = socketio.Client()
 sio.connect('ws://socket-service')
 sio.emit('joinProject', {"project_id": project_id})
 
-def pil_loader(path):
-    return Image.open(path).convert('RGB')
+dataset_name = f"{project_id}_{job_completion_index+1}"
+dataset_path = f"/app/{dataset_name}"
 
-dataset_name = f"/app/datasets/{project_id}_{job_completion_index+1}"
+# Get file from bucket
+response = requests.get(f"http://bucket-service/datasets/{dataset_name}.zip")
+if response.status_code == requests.codes.ok:
+    with open(f"{dataset_path}.zip", 'wb') as file:
+        file.write(response.content)
+else:
+    print('Error occurred while downloading the dataset. Status code:', response.status_code)
+    sys.exit(5)
+
+def unzip_folder(zip_path, extract_path):
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_path)
+
+unzip_folder(f"{dataset_path}.zip", dataset_path)
 
 # Datasets
 dataset_collection = [
-    { "path": dataset_name, "channels": 3 },
+    { "path": dataset_path, "channels": 3 },
 ]
+
+def pil_loader(path):
+    return Image.open(path).convert('RGB')
 
 image_transforms = [
     transforms.Resize((228, 228)),
@@ -297,7 +313,4 @@ for i, dataset in enumerate(dataset_collection):
             except:
                 print("Error sending the metrics to the backend-service or websocket")
 
-            # Calc Confusion Matrix If we Have Time
-
-
-sys.exit(0)
+sys.exit()
