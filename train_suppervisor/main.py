@@ -9,37 +9,17 @@ from kubernetes import client, config
 project_id = getenv('PROJECT_ID')
 model = getenv('MODEL')
 
-def create_volume_mounts(job_type):
-    volume_mounts = []
-    volumes = []
-
-    volume_mounts.append(client.V1VolumeMount(mount_path="/app/datasets", name='datasets-data'))
-    volumes.append(client.V1Volume(name='datasets-data', persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-datasets")))
-
-    if job_type == "split":
-        return volume_mounts, volumes
-
-    volume_mounts.append(client.V1VolumeMount(mount_path="/app/models", name='models-data'))
-    volumes.append(client.V1Volume(name='models-data', persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-models")))
-
-    return volume_mounts, volumes
-
 def create_job_object(job_name, image_name, env_vars=None, completions=None, parallelism=None):
     # Construct the environment variables for the container
     env = []
     if env_vars is not None:
         for name, value in env_vars.items():
             env.append(client.V1EnvVar(name=name, value=str(value)))
-
-    # Define PVC(s) to mount
-    job_type = job_name.split("-")[0]
-    volume_mounts, volumes = create_volume_mounts(job_type)
     
     # Define the job's container
     container = client.V1Container(
         name=job_name,
         image=image_name,
-        volume_mounts=volume_mounts if volume_mounts else None,
         env=env if env else None,
     )
 
@@ -65,7 +45,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
         # Define the job's template
         template = client.V1PodTemplateSpec(
             metadata=client.V1ObjectMeta(labels={"app": "split"}),
-            spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity, volumes=volumes if volumes else None),
+            spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity),
         )
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
@@ -147,7 +127,7 @@ def main():
     create_job(batch_v1, split_job)
     get_job_status(batch_v1, split_job_name)
 
-    # =================  Training Jobs  ================= #
+    # # =================  Training Jobs  ================= #
 
     train_job_name = f"train-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexustrain:latest"
@@ -158,7 +138,7 @@ def main():
     create_job(batch_v1, train_job)
     get_job_status(batch_v1, train_job_name)
 
-    # =================  Aggregator Job  ================= #
+    # # =================  Aggregator Job  ================= #
 
     aggregator_job_name = f"aggregator-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexusaggregator:latest"
