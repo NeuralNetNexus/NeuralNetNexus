@@ -76,7 +76,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
         # Define the job's template
         template = client.V1PodTemplateSpec(
             metadata=client.V1ObjectMeta(labels={"app": job_name}),
-            spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity, volumes=volumes if volumes else None),
+            spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity),
         )
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
