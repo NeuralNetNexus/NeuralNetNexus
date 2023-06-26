@@ -15,6 +15,7 @@ io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
   socket.on('joinProject', (data) => {
+      console.log('joinProject', data.projectId);
       socket.join(data.projectId);
   });
 
