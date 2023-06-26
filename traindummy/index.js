@@ -22,26 +22,28 @@ socket.on('connect', () => {
     // Send projectStatus
     socket.emit('projectStatus', {
       'projectId': projectId,
-      "status": "started (2-4)",
+      "state": "started (2-4)",
     });
 
     // Send splitNumber
     socket.emit('splitNumber', {
       'projectId': projectId,
-      "n_batch": 3,
+      "number": 3,
     });
 
     // Send trainingMetrics
     socket.emit('trainingMetrics', {
       'projectId': projectId,
-      "train_index": randomInt(1, 6),
-      "epoch": 50,
-      "train_accuracy": randomAcc,
-      "val_accuracy": randomAcc - 5,
-      "train_loss": randomLoss,
-      "val_loss": randomLoss + 0.3,
-      "cpu_usage": 35,
-      "ram_usage": 35
+      metrics: {
+        "train_index": randomInt(1, 6),
+        "epoch": 50,
+        "train_accuracy": randomAcc,
+        "val_accuracy": randomAcc - 5,
+        "train_loss": randomLoss,
+        "val_loss": randomLoss + 0.3,
+        "cpu_usage": 35,
+        "ram_usage": 35
+      }
     });
 
     // Send aggregatorMetrics
