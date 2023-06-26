@@ -13,6 +13,7 @@ import socketio
 import requests
 import sys
 import zipfile
+from models.cnn import CNN
 
 project_id = os.getenv('PROJECT_ID')
 n_splits = os.getenv('N_SPLITS')
@@ -36,7 +37,7 @@ sio = socketio.Client()
 sio.connect('ws://socket-service')
 sio.emit('joinProject', project_id)
 
-def get_model(model_name):
+def get_model(model_name, num_classes):
     if model_name == 'VGG16':
         model = models.vgg16(pretrained=False) # create a vgg16 model architecture        
     elif model_name == 'ResNet18':
@@ -45,10 +46,15 @@ def get_model(model_name):
         model = models.efficientnet_v2_s(pretrained=False)
     elif model_name == 'SqueezeNet':
         model = models.squeezenet1_0(pretrained=False)
+    elif model_name == 'CNN':
+        model = CNN(num_classes=num_classes)
     return model
 
 def train(model_files, model_name):
-    model = get_model(model_name)
+
+    numclasses = len(os.listdir(f"/app/{project_id}_test"))
+
+    model = get_model(model_name, numclasses)
 
     params = model.state_dict()
 
@@ -67,7 +73,7 @@ def train(model_files, model_name):
         params[k] /= n_models
 
     # Load averaged parameters into the model architecture
-    model_avg = get_model(model_name)
+    model_avg = get_model(model_name, numclasses)
     model_avg.load_state_dict(params)
 
     # Save the averaged model
@@ -192,8 +198,6 @@ def test(test_dataset, model):
 
 if __name__ == '__main__':
 
-    model = train(model_files, model)
-
     # Get dataset from bucket
     response = requests.get(f"http://bucket-service/datasets/{project_id}_test.zip")
     if response.status_code == requests.codes.ok:
@@ -209,5 +213,8 @@ if __name__ == '__main__':
 
     unzip_folder(f"/app/{project_id}_test.zip", f"/app/{project_id}_test")
 
+    model = train(model_files, model)
+
     test_dataset = f"/app/{project_id}_test"
     test(test_dataset, model)
+    sio.disconnect()

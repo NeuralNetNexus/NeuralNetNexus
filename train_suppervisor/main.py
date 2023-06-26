@@ -2,6 +2,7 @@ from os import getenv
 from time import sleep
 import requests
 import sys
+import time
 
 import socketio
 import yaml
@@ -118,6 +119,9 @@ def main():
     # utility. If no argument provided, the config will be loaded from
     # default location.
     config.load_incluster_config()
+    
+    time.sleep(10)
+
     batch_v1 = client.BatchV1Api()
 
     sio.connect(f'ws://socket-service', namespaces=['/'])
@@ -166,3 +170,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    sio.disconnect()
