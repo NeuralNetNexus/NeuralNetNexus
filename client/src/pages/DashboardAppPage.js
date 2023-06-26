@@ -6,10 +6,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import { io } from 'socket.io-client';
 import { useParams } from 'react-router-dom';
-
-// @mui
-import { Grid, Container, Typography } from '@mui/material';
-
+import Scrollbar from '../components/scrollbar';
+import Iconify from '../components/iconify';
 // sections
 import {
   AppWebsiteVisits,
@@ -17,6 +15,23 @@ import {
   AppWidgetSummaryNoIcon,
 } from '../sections/@dashboard/app';
 
+// sections
+import { ProjectListHead, ProjectListToolbar } from '../sections/@dashboard/project';
+
+
+import {
+  Grid,
+  Table,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+  Container,
+  Typography,
+  TableContainer,
+  TablePagination,
+  Checkbox
+} from '@mui/material';
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
@@ -33,11 +48,38 @@ export default function DashboardAppPage() {
   const [recall, setRecall] = useState('-');
   const [scoreF1, setF1Score] = useState('-');
   
+  const [files, setFiles] = useState([]);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [page, setPage] = useState(0);
+
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
-  
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setPage(0);
+    setRowsPerPage(parseInt(event.target.value, 10));
+  };
+
+
   useEffect(() => {
+    async function getFiles() {
+      try {
+        await axios.get(`http://localhost:3001/projects/${id}/files`).then(response => {
+          setFiles(response.data.files);
+        })
+        .catch(error => {
+          console.error(error);
+        });        
+      } catch (error) {
+        console.error('Error fetching files:', error);
+      }
+    }
+    getFiles()
+    
     const fetchData = async () => {
       try {
         const response = await axios.get(`/api/projects/${id}`);
@@ -66,7 +108,7 @@ export default function DashboardAppPage() {
   
           return data;
         });
-  
+      
         const socket = io(window.location.host);
   
         socket.on('connect', () => {
@@ -131,8 +173,8 @@ export default function DashboardAppPage() {
     };
   
     fetchData();
-  }, []);   
-
+  }, []);  
+  const [selected, setSelected] = useState([]);
   return (
     <>
       <Helmet>
@@ -144,14 +186,14 @@ export default function DashboardAppPage() {
           Project {name}
         </Typography>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={4} paddingBottom={10}>
 
-          <Grid item xs={12} sm={6} md={nSplit !== "-" ? 6: 12}>
-            <AppWidgetSummary title="Status" text={currentState ? currentState : "Pending"} color={currentState === "Pending" ? 'warning' : 'success'} icon={'ant-design:info-outlined'} />
+          <Grid item xs={12} sm={6} md={nSplit !== "-" ? 6 : 12}>
+            <AppWidgetSummary title="Status" text={currentState} color={currentState ? 'warning' : 'error'} icon={'ant-design:info-outlined'} />
           </Grid>
-
+          
           <Grid item xs={12} sm={6} md={nSplit !== "-" ? 6 : 0}>
-            <AppWidgetSummary title="Number of Splits" text={nSplit} color="warning" icon={'ant-design:split-cells-outlined'} />
+            <AppWidgetSummary title="Number of Splits" text={nSplit} color="info" icon={'ant-design:split-cells-outlined'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -169,7 +211,7 @@ export default function DashboardAppPage() {
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummaryNoIcon title="F1 Score" text={scoreF1} color="secondary"  />
           </Grid>
-
+          
           { graphData.length > 0 ?
             <Typography variant="h4" sx={{ mb: 1, paddingTop: "50px", paddingLeft: "30px"}}>
               Training Pods
@@ -272,6 +314,67 @@ export default function DashboardAppPage() {
             </Accordion>
           </Grid>
         ))}
+        </Grid>
+
+
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Grid item xs={12} sm={6} md={6} paddingBottom={10} paddingTop={10}>
+            <img src={`http://localhost:3001/projects/${id}/files/confusion_matrix`} alt="Confusion Matrix" />
+          </Grid>
+        </div>
+
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Project Files
+        </Typography>
+
+        <Grid item xs={12} sm={6} md={6}>
+          <Scrollbar>
+            <TableContainer sx={{ minWidth: 800 }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="left">File Name</TableCell>
+                    <TableCell align="right">Download</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {files.map((file) => {
+                    const fileName = file.split(".")[0];
+                    if(file.includes("png")){
+                      return;
+                    }
+                    return (
+                      <TableRow hover key={file} tabIndex={-1}>
+
+                        <TableCell align="left" component="th" scope="row" padding="none">
+                          <Typography variant="subtitle2" noWrap>
+                            {file}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <a
+                            href={`http://localhost:3001/projects/${id}/files/${fileName}`}
+                            target="_blank"
+                          >
+                            <Iconify icon={'eva:download-outline'} sx={{ mr: 2 }} />
+                          </a>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Scrollbar>
+            <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={files.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </Grid>
       </Container>
     </>
