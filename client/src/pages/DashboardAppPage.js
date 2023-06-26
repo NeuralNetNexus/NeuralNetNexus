@@ -75,7 +75,7 @@ export default function DashboardAppPage() {
   
         setTrainAccuracy(project.aggregated_accuracy);
         setCurrentState(project.state);
-        setNSplit(project.n_splits);
+        setNSplit(project.n_splits || '-');
         setName(project.name);
         setGraphData(() => {
           let data = [];

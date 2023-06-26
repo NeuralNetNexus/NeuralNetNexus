@@ -19,7 +19,7 @@ import requests
 import sys
 import zipfile
 
-config.load_kube_config()
+config.load_incluster_config()
 
 # Create an instance of the Kubernetes API client
 api_client = client.CoreV1Api()
@@ -37,7 +37,7 @@ job_completion_index = os.getenv('JOB_COMPLETION_INDEX')
 
 sio = socketio.Client()
 sio.connect('ws://socket-service')
-sio.emit('joinProject', {"project_id": project_id})
+sio.emit('joinProject', {"projectId": project_id})
 
 dataset_name = f"{project_id}_{job_completion_index+1}"
 dataset_path = f"/app/{dataset_name}"
