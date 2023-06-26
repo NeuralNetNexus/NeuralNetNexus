@@ -103,16 +103,12 @@ export default function DashboardAppPage() {
           socket.emit('joinProject', {'projectId': id});
         });
   
-        socket.on('aggregatorMetrics', (values) => {
-          setTrainAccuracy(values.test_accuracy);
-        });
-  
-        socket.on('projectStatus', (values) => {
-          setCurrentState(values.status);
+        socket.on('projectState', (values) => {
+          setCurrentState(values);
         });
   
         socket.on('splitNumber', (values) => {
-          setNSplit(values.n_batch);
+          setNSplit(values);
         });
 
         socket.on('aggregatorMetrics', (values) => {

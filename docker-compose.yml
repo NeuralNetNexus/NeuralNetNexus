@@ -37,7 +37,8 @@ services:
     image: traindummy
     build: ./traindummy
     environment:
-      - WSSERVER=socket-server
+      # - WSSERVER=socket-server
+      - WSSERVER=ws://192.168.1.71
 
   database:
     image: mongo
