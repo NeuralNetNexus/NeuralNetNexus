@@ -320,6 +320,10 @@ if __name__ == '__main__':
     sio.connect('ws://socket-service')
     sio.emit('joinProject', {"projectId": project_id})
 
-    train()
+    try:
+        train()
+    except:
+        sio.disconnect()
+        exit()    
     sio.disconnect()
     exit()
