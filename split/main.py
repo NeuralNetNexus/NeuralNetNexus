@@ -141,7 +141,9 @@ if __name__ == '__main__':
             sys.exit(5)
 
         split_zip(pvc_path, project_id)
-    finally:
+    except:
         sio.disconnect()
-        print(f"Done!")
-        sys.exit()
+        exit(5)
+    sio.disconnect()
+    print(f"Done!")
+    sys.exit()

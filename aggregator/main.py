@@ -220,6 +220,10 @@ if __name__ == '__main__':
         model = train(model_files, model)
 
         test_dataset = f"/app/{project_id}_test"
-    finally:
+
         test(test_dataset, model)
+    except:
         sio.disconnect()
+        exit(5)
+    sio.disconnect()
+    exit()

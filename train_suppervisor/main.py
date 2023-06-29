@@ -171,6 +171,9 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    finally:
+    except:
         sio.disconnect()
-        exit()
+        exit(5)
+    sio.disconnect()
+    exit()
+        
