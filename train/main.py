@@ -62,14 +62,16 @@ def train():
 
     def pil_loader(path):
         return Image.open(path).convert('RGB')
+    
+    neuralnet = os.getenv('MODEL')
+    size = (224, 224) if neuralnet is not "CNN" else (32, 32)
 
     image_transforms = [
-        transforms.Resize((228, 228)),
-        transforms.RandomCrop(size=224),
+        transforms.Resize(size),
         transforms.ToTensor(),
     ]
 
-    for i, dataset in enumerate(dataset_collection):
+    for dataset in dataset_collection:
         
         dataset_path = dataset["path"]
         dataset_channels = dataset["channels"]
@@ -131,7 +133,6 @@ def train():
             print(valid_data_size)
         
             # Models
-            neuralnet = os.getenv('MODEL')
             if neuralnet == "SqueezeNet":
                 model_collection = [models.SqueezeNet(num_classes=num_classes, num_channels=dataset_channels)]
             elif neuralnet == "ResNet18":
