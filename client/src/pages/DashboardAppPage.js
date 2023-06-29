@@ -232,7 +232,7 @@ export default function DashboardAppPage() {
               <AccordionDetails>
                 <Grid container spacing={4}>
                   <Grid item xs={12} sm={6} md={4}>
-                    <AppWidgetSummary title="Epoch" text={String(item.epoch[-1] || 1)} color="success" icon={'ant-design:number-outlined'} />
+                    <AppWidgetSummary title="Epoch" text={String(item.epoch.slice(-1))} color="success" icon={'ant-design:field_ number-outlined'} />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
                     <AppWidgetSummary title="CPU Usage" text={item.cpu_usage} color="warning" icon={'ant-design:number-outlined'} />

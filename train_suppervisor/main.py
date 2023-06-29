@@ -49,8 +49,13 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
         )
         # Define the job's template
         template = client.V1PodTemplateSpec(
+<<<<<<< HEAD
             metadata=client.V1ObjectMeta(labels={"app": "split"}),
             spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity),
+=======
+            metadata=client.V1ObjectMeta(labels={"app": job_name}),
+            spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity, volumes=volumes if volumes else None),
+>>>>>>> 55fdf3f (    Minor)
         )
         spec = client.V1JobSpec(
             ttl_seconds_after_finished=10,
@@ -151,8 +156,13 @@ def main():
     env_vars = {"PROJECT_ID": project_id, "MODEL": model, "N_SPLITS": n_splits}
     train_job = create_job_object(train_job_name, image_name, env_vars, completions=n_splits, parallelism=n_splits)
     create_job(batch_v1, train_job)
+<<<<<<< HEAD
     for _ in range(n_splits):
         get_job_status(batch_v1, train_job_name)
+=======
+    # Todo -> deve esperar que tenha X completions.
+    get_job_status(batch_v1, train_job_name)
+>>>>>>> 55fdf3f (    Minor)
 
     # # =================  Aggregator Job  ================= #
     
