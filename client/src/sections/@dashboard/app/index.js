@@ -8,3 +8,4 @@ export { default as AppWidgetSummary } from './AppWidgetSummary';
 export { default as AppWidgetSummaryNoIcon } from './AppWidgetSummaryNoIcon';
 export { default as AppCurrentSubject } from './AppCurrentSubject';
 export { default as AppConversionRates } from './AppConversionRates';
+export { default as LogDisplay } from './LogDisplay';

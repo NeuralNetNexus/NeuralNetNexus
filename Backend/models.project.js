@@ -26,10 +26,6 @@ const myModelSchema = new Schema({
     type: Number,
     required: false
   },
-  aggregated_accuracy: {
-    type: Number,
-    required: false
-  },
   logs: {
     type: [String],
     required: true,

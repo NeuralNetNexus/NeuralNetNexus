@@ -13,6 +13,7 @@ import {
   AppWebsiteVisits,
   AppWidgetSummary,
   AppWidgetSummaryNoIcon,
+  LogDisplay,
 } from '../sections/@dashboard/app';
 
 // sections
@@ -36,14 +37,15 @@ import {
 
 export default function DashboardAppPage() {
   const { id } = useParams();
-  const [trainAccuracy, setTrainAccuracy] = useState(null);
   const [currentState, setCurrentState] = useState("Pending");
   const [nSplit, setNSplit] = useState('-');
   const [name, setName] = useState('-');
+  const [logs, setLogs] = useState([]);
   const [expanded, setExpanded] = useState(false);
   const [graphData, setGraphData] = useState([]);
 
   const [accuracy_avg, setAvgAccuracy] = useState('-');
+  const [loss_avg, setAvgLoss] = useState('-');
   const [precision, setPrecision] = useState('-');
   const [recall, setRecall] = useState('-');
   const [scoreF1, setF1Score] = useState('-');
@@ -72,11 +74,19 @@ export default function DashboardAppPage() {
         const response = await axios.get(`/api/projects/${id}`);
         const project = response.data.project;
         console.log(project);
-  
-        setTrainAccuracy(project.aggregated_accuracy);
+
         setCurrentState(project.state);
         setNSplit(project.n_splits || '-');
         setName(project.name);
+        
+        setLogs(project.logs);
+
+        setAvgAccuracy(project.aggregator.accuracy.toFixed(2));
+        setAvgLoss(project.aggregator.loss.toFixed(2));
+        setPrecision(project.aggregator.precision.toFixed(2));
+        setRecall(project.aggregator.recall.toFixed(2));
+        setF1Score(project.aggregator.f1_score.toFixed(2));
+
         setGraphData(() => {
           let data = [];
           for (let i = 0; i < project.n_splits; i++) {
@@ -89,6 +99,7 @@ export default function DashboardAppPage() {
               valAccuracy: project.splits[i].train_accuracies,
               trainLoss: project.splits[i].train_accuracies,
               valLoss: project.splits[i].train_accuracies,
+              logs: project.splits[i].logs,
             };
             data.push(obj);
           }
@@ -194,21 +205,27 @@ export default function DashboardAppPage() {
             <AppWidgetSummary title="Number of Splits" text={nSplit} color="info" icon={'ant-design:split-cells-outlined'} />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2}>
             <AppWidgetSummaryNoIcon title="Accuracy" text={accuracy_avg} color="secondary" />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2}>
+            <AppWidgetSummaryNoIcon title="Loss" text={loss_avg} color="secondary" />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={2}>
             <AppWidgetSummaryNoIcon title="Precision" text={precision} color="secondary"/>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2}>
             <AppWidgetSummaryNoIcon title="Recall" text={recall} color="secondary" />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2}>
             <AppWidgetSummaryNoIcon title="F1 Score" text={scoreF1} color="secondary"  />
           </Grid>
+
+          <LogDisplay logs={logs} />
           
           { graphData.length > 0 ?
             <Typography variant="h4" sx={{ mb: 1, paddingTop: "50px", paddingLeft: "30px"}}>
@@ -308,6 +325,7 @@ export default function DashboardAppPage() {
                     />
                   </Grid>
                 </Grid>
+                <LogDisplay logs={item.logs} />
               </AccordionDetails>
             </Accordion>
           </Grid>

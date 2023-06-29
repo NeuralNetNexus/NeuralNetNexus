@@ -260,31 +260,6 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
   }
 });
 
-// PATCH - update project's aggregated accuracy
-app.patch("/projects/:projectId/aggregated_accuracy", [
-  check("aggregated_accuracy")
-  .notEmpty().withMessage("Aggregated accuracy is required")
-  .isFloat({ min: 0, max: 100 }).withMessage("Aggregated accuracy must be between 0 and 100")],
-async (req, res) => {
-  const { projectId } = req.params;
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ error: 'PUT_PROJECT_FAILED', message: errors.array() });
-  }
-  const {aggregated_accuracy} = req.body;
-  try{
-    const project = await Project.findOne({_id: projectId});
-    project.aggregated_accuracy = aggregated_accuracy
-    await project.save()
-    res.json({ project: project});
-  } catch (err) {
-    res.status(500).json({ 
-      error: 'PUT_PROJECT_FAILED',
-      message: 'Error when updating project'
-    });
-  }
-});
-
 // PATCH - update project's number of splits
 app.patch("/projects/:projectId/n-splits", [
   check("splits")
@@ -391,24 +366,24 @@ async (req, res) => {
 });
 
 // PATCH - Add filepath to project
-app.patch("/projects/:projectId/filepath",
-async (req, res) => {
-    const { projectId, splitId } = req.params;
-    const { logs } = req.body;
+// app.patch("/projects/:projectId/filepath",
+// async (req, res) => {
+//     const { projectId, splitId } = req.params;
+//     const { logs } = req.body;
 
-    try {
-      const project = await Project.findOne({ _id: projectId });
-      project.logs.push(logs);
+//     try {
+//       const project = await Project.findOne({ _id: projectId });
+//       project.logs.push(logs);
 
-      await project.save();
-      res.json({ project: project });
-    } catch (err) {
-      res.status(500).json({ 
-        error: 'PUT_PROJECT_FAILED',
-        message: 'Error when updating project'
-      });
-    }
-});
+//       await project.save();
+//       res.json({ project: project });
+//     } catch (err) {
+//       res.status(500).json({ 
+//         error: 'PUT_PROJECT_FAILED',
+//         message: 'Error when updating project'
+//       });
+//     }
+// });
 
 // PATCH - Add accuracy to split
 app.patch("/projects/:projectId/splits/:splitId/metrics",
