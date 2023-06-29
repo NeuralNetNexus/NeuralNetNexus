@@ -123,10 +123,14 @@ def main():
 
     batch_v1 = client.BatchV1Api()
 
+    print("Waiting for project to be created...")
+
     sio.connect(f'ws://socket-service', namespaces=['/'])
     sio.emit('joinProject', {'projectId': project_id})
     
     # =================  Split Job  ================= #
+
+    print("Project created. Starting split job...")
 
     requests.patch(f"http://backend-service/projects/{project_id}/state", json={"state": "[1/4] Splitting Dataset"})
     sio.emit('projectState', {'projectId': project_id, 'state': '[1/4] Splitting Dataset'})
@@ -138,6 +142,8 @@ def main():
     split_job = create_job_object(split_job_name, image_name, env_vars)
     create_job(batch_v1, split_job)
     get_job_status(batch_v1, split_job_name)
+
+    print("Split job finished. Starting training job...")
 
     # # =================  Training Jobs  ================= #
 
@@ -154,6 +160,8 @@ def main():
     for _ in range(n_splits):
         get_job_status(batch_v1, train_job_name)
 
+    print("Training job finished. Starting aggregator job...")
+
     # # =================  Aggregator Job  ================= #
     
     requests.patch(f"http://backend-service/projects/{project_id}/state", json={"state": "[3/4] Aggregating"})
@@ -168,10 +176,13 @@ def main():
     requests.patch(f"http://backend-service/projects/{project_id}/state", json={"state": "[4/4] Done"})
     sio.emit('projectState', {'projectId': project_id, 'state': '[4/4] Done'})
 
+    print("Aggregator job finished. Done!")
+
 if __name__ == '__main__':
     try:
         main()
-    except:
+    except Exception as e:
+        print("Error: ", sys.exc_info()[0])
         sio.disconnect()
         exit(5)
     sio.disconnect()
