@@ -17,9 +17,11 @@ microk8s kubectl label nodes fedora kubernetes.io/role=platform
 # Criar as labels para o computing
 microk8s kubectl label nodes neuralnetnexus-desktop computing=yessir
 microk8s kubectl label nodes surface-laptop computing=yessir
+microk8s kubectl label nodes ubuntu2004 computing=yessir
 
 # Criar as labels para o auxilliar
 microk8s kubectl label nodes ubuntu2004 helper=yessir
+microk8s kubectl label nodes surface-laptop helper=yessir
 
 # Create objects
 microk8s kubectl apply -f kubernetes/configmaps/*
