@@ -97,7 +97,6 @@ export default function DashboardAppPage() {
         });
       
         const socket = io(window.location.host);
-  
         socket.on('connect', () => {
           console.log('Connected to the server');
           socket.emit('joinProject', {'projectId': id});
@@ -113,6 +112,7 @@ export default function DashboardAppPage() {
             let data = [];
             for (let i = 0; i < values.n_batch; i++) {
               let obj = {
+                source: i+1,
                 epoch: [],
                 trainAccuracy: [],
                 valAccuracy: [],

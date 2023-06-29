@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Select, MenuItem, InputLabel, Button, FormControl, TextField, LinearProgress } from '@mui/material';
-import io from 'socket.io-client';
-const socket = io(window.location.host);
 
 const ProjectPage = () => {
     const navigate = useNavigate();
@@ -45,7 +43,6 @@ const ProjectPage = () => {
             });
             console.log(response.data);
             const id = response.data.projectId
-            socket.emit('joinProject', id);
             navigate(`/dashboard/projects/${id}`);
           } catch (err) {
             console.error(err);
