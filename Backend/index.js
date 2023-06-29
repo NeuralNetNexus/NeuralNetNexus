@@ -436,6 +436,30 @@ async (req, res) => {
     }
 });
 
+// PATCH - Add accuracy to split
+app.patch("/projects/:projectId/aggregatormetrics",
+async (req, res) => {
+    const { projectId, splitId } = req.params;
+    const { loss, accuracy, precision, recall, f1Score } = req.body;
+
+    try {
+      const project = await Project.findOne({ _id: projectId });
+      project.aggregator.loss = loss;
+      project.aggregator.accuracy = accuracy;
+      project.aggregator.precision = precision;
+      project.aggregator.recall = recall;
+      project.aggregator.f1Score = f1Score;
+
+      await project.save();
+      res.json({ project: project });
+    } catch (err) {
+      res.status(500).json({ 
+        error: 'PUT_PROJECT_FAILED',
+        message: 'Error when updating project'
+      });
+    }
+});
+
 app.listen(PORT, () => {
   console.log("Server is running on port " + PORT);
 });

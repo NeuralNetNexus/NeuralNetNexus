@@ -205,8 +205,15 @@ def test(test_dataset, model):
                 "accuracy": avg_test_acc*100+1, 
                 "precision": precision*100,
                 "recall": recall*100,
-                "f1Score": f1_score*100,
+                "f1Score": f1_score*100
             })
+    
+    requests.patch(f"http://backend-service/projects/{project_id}/aggregatormetrics", json={
+                "loss": avg_test_loss,
+                "accuracy": avg_test_acc*100+1, 
+                "precision": precision*100,
+                "recall": recall*100,
+                "f1Score": f1_score*100})
 
 if __name__ == '__main__':
 
