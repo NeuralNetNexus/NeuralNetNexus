@@ -4,7 +4,7 @@ const { randomInt } = require('crypto');
 const WSSERVER = process.env.WSSERVER || 'ws://192.168.1.71';
 
 const socket = io(WSSERVER); // change this to your server's URL
-const projectId = '649911265f2b80c4e753b2d8';
+const projectId = '649d0508ebc67817aabae961';
 
 // Connect to the server
 socket.on('connect', () => {

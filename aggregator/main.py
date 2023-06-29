@@ -24,13 +24,14 @@ model_files = []
 # Get Models from Bucket
 for i in range(1, n_splits+1):
     response = requests.get(f"http://bucket-service/models/{project_id}_{i}.pth")
+    print(f"Downloading model http://bucket-service/models/{project_id}_{i}.pth...")
     if response.status_code == requests.codes.ok:
         model_name = f"/app/{project_id}_{i}.pth"
         with open(model_name, 'wb') as file:
             file.write(response.content)
             model_files.append(model_name)
     else:
-        print('Error occurred while downloading the dataset. Status code:', response.status_code)
+        print('Error occurred while downloading the model. Status code:', response.status_code)
         sys.exit(5)
 
 sio = socketio.Client()
@@ -107,7 +108,7 @@ def test(test_dataset, model):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     neuralnet = os.getenv('MODEL')
-    size = (224, 224) if neuralnet is not "CNN" else (32, 32)
+    size = (224, 224) if neuralnet != "CNN" else (32, 32)
 
     image_transforms = [
         transforms.Resize(size),

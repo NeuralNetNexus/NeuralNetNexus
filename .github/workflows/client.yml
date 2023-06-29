@@ -28,4 +28,5 @@ jobs:
         context: client
         file: client/Dockerfile
         push: true
+        platforms: linux/amd64,linux/arm64
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/neuralnetnexusfrontend:latest

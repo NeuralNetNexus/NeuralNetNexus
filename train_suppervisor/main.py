@@ -29,7 +29,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
     )
 
     # Define the job's spec
-    if completions and parallelism:
+    if job_name.split('-')[0] != 'split':
         affinity = client.V1Affinity(
             node_affinity=client.V1NodeAffinity(
                 required_during_scheduling_ignored_during_execution=client.V1NodeSelector(
@@ -49,7 +49,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
         )
         # Define the job's template
         template = client.V1PodTemplateSpec(
-            metadata=client.V1ObjectMeta(labels={"app": "split"}),
+            metadata=client.V1ObjectMeta(labels={"app": job_name.split('-')[0]}),
             spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity),
         )
         spec = client.V1JobSpec(
@@ -80,7 +80,7 @@ def create_job_object(job_name, image_name, env_vars=None, completions=None, par
         )
         # Define the job's template
         template = client.V1PodTemplateSpec(
-            metadata=client.V1ObjectMeta(labels={"app": job_name}),
+            metadata=client.V1ObjectMeta(labels={"app": job_name.split('-')[0]}),
             spec=client.V1PodSpec(restart_policy="Never", containers=[container], affinity=affinity),
         )
         spec = client.V1JobSpec(
@@ -179,15 +179,12 @@ def main():
     print("Aggregator job finished. Done!")
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        print("Error: ", sys.exc_info()[0])
+        sio.disconnect()
+        exit(5)
     sio.disconnect()
     exit()
-    # try:
-    #     main()
-    # except Exception as e:
-    #     print("Error: ", sys.exc_info()[0])
-    #     sio.disconnect()
-    #     exit(5)
-    # sio.disconnect()
-    # exit()
         

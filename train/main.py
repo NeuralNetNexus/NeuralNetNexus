@@ -65,7 +65,7 @@ def train():
 
         
     neuralnet = os.getenv('MODEL')
-    size = (224, 224) if neuralnet is not "CNN" else (32, 32)
+    size = (224, 224) if neuralnet != "CNN" else (32, 32)
 
     image_transforms = [
         transforms.Resize(size),
@@ -324,7 +324,8 @@ if __name__ == '__main__':
 
     try:
         train()
-    except:
+    except Exception as e:
+        print(e)
         sio.disconnect()
         exit(5)
     sio.disconnect()
