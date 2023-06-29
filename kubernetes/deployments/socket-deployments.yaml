@@ -17,6 +17,10 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3002
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
       nodeSelector:
         kubernetes.io/role: platform
         

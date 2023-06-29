@@ -22,6 +22,10 @@ spec:
             mountPath: /usr/app/datasets
           - name: models-data
             mountPath: /usr/app/models
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi 
       nodeSelector:
         kubernetes.io/role: platform
       volumes:
