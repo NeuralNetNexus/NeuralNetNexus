@@ -16,7 +16,7 @@ import zipfile
 from models.cnn import CNN
 
 project_id = os.getenv('PROJECT_ID')
-n_splits = os.getenv('N_SPLITS')
+n_splits = int(os.getenv('N_SPLITS'))
 model = os.getenv('MODEL')
 
 model_files = []
@@ -106,10 +106,13 @@ def test(test_dataset, model):
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+    neuralnet = os.getenv('MODEL')
+    size = (224, 224) if neuralnet is not "CNN" else (32, 32)
+
     image_transforms = [
-        transforms.Resize((224, 224)),
+        transforms.Resize(size),
         transforms.ToTensor(),
-    ]   
+    ] 
 
     criterion = nn.CrossEntropyLoss()
     confusion_matrix = torch.zeros(num_classes, num_classes)

@@ -18,7 +18,7 @@ class _CNN(nn.Module):
         self.pool = nn.MaxPool2d(2, 2) # Pooling layer
         self.conv2 = nn.Conv2d(6, 16, 5) # Convolutional layer 2
         
-        self.fc1 = nn.Linear(16 * 53 * 53, 120) 
+        self.fc1 = nn.Linear(16 * 6 * 6, 120) 
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, num_classes)
 
@@ -28,7 +28,7 @@ class _CNN(nn.Module):
         # Pass data through conv2
         x = self.pool(F.relu(self.conv2(x)))
         # Flatten the data
-        x = x.view(-1, 16 * 53 * 53)
+        x = x.view(-1, 16 * 6 * 6)
         # Pass data through fc1
         x = F.relu(self.fc1(x))
         # Pass data through fc2
