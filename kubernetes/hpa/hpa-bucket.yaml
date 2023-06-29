@@ -9,4 +9,4 @@ spec:
     name: bucket-deployment
   minReplicas: 1
   maxReplicas: 10
-  targetCPUUtilizationPercentage: 50
+  targetCPUUtilizationPercentage: 75
