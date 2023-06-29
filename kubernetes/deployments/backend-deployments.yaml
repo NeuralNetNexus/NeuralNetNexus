@@ -17,11 +17,6 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3001
-        resources:
-          limits:
-            cpu: "1"
-          requests:
-            cpu: "0.5"
         env:
         - name: MONGODB_CONNECTION
           valueFrom:
