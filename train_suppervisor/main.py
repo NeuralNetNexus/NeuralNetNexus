@@ -179,12 +179,15 @@ def main():
     print("Aggregator job finished. Done!")
 
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception as e:
-        print("Error: ", sys.exc_info()[0])
-        sio.disconnect()
-        exit(5)
+    main()
     sio.disconnect()
     exit()
+    # try:
+    #     main()
+    # except Exception as e:
+    #     print("Error: ", sys.exc_info()[0])
+    #     sio.disconnect()
+    #     exit(5)
+    # sio.disconnect()
+    # exit()
         
