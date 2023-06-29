@@ -18,6 +18,7 @@ microk8s kubectl label nodes fedora kubernetes.io/role=platform
 microk8s kubectl label nodes neuralnetnexus-desktop computing=yessir
 microk8s kubectl label nodes surface-laptop computing=yessir
 microk8s kubectl label nodes ubuntu2004 computing=yessir
+microk8s kubectl label nodes ubuntu-linux-22-04-desktop computing=yessir
 
 # Criar as labels para o auxilliar
 microk8s kubectl label nodes ubuntu2004 helper=yessir

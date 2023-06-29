@@ -73,23 +73,23 @@ const myModelSchema = new Schema({
   aggregator: {
     loss: {
       type: Number,
-      required: true,
+      required: false,
     },
     accuracy: {
       type: Number,
-      required: true,
+      required: false,
     },
     precision: {
       type: Number,
-      required: true,
+      required: false,
     },
     recall: {
       type: Number,
-      required: true,
+      required: false,
     },
     f1Score: {
       type: Number,
-      required: true,
+      required: false,
     },
   },
 }, {
