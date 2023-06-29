@@ -5,7 +5,6 @@ metadata:
   labels:
     app: mongodb
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: mongodb
@@ -20,6 +19,11 @@ spec:
           image: mongo:latest
           ports:
             - containerPort: 27017
+          resources:
+            limits:
+              cpu: 500m
+            requests:
+              cpu: 200m
           volumeMounts:
             - name: mongodb-data
               mountPath: /data/db

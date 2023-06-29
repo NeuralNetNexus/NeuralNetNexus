@@ -6,7 +6,6 @@ spec:
   selector:
     matchLabels:
       app: bucket
-  replicas: 3
   template:
     metadata:
       labels:
@@ -23,6 +22,11 @@ spec:
             mountPath: /usr/app/datasets
           - name: models-data
             mountPath: /usr/app/models
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 200m
       nodeSelector:
         kubernetes.io/role: platform
       volumes:

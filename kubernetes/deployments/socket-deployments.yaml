@@ -6,7 +6,6 @@ spec:
   selector:
     matchLabels:
       app: socketserver
-  replicas: 1
   template:
     metadata:
       labels:
@@ -18,6 +17,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3002
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 200m
       nodeSelector:
         kubernetes.io/role: platform
         
