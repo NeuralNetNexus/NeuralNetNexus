@@ -24,9 +24,9 @@ spec:
             mountPath: /usr/app/models
         resources:
           limits:
-            cpu: 500m
+            cpu: "1"
           requests:
-            cpu: 200m
+            cpu: "0.5"
       nodeSelector:
         kubernetes.io/role: platform
       volumes:
