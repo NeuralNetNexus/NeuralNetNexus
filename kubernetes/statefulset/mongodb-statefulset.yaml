@@ -21,9 +21,9 @@ spec:
             - containerPort: 27017
           resources:
             limits:
-              cpu: 500m
+              cpu: "1"
             requests:
-              cpu: 200m
+              cpu: "0.5"
           volumeMounts:
             - name: mongodb-data
               mountPath: /data/db
