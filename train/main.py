@@ -62,7 +62,8 @@ def train():
 
     def pil_loader(path):
         return Image.open(path).convert('RGB')
-    
+
+        
     neuralnet = os.getenv('MODEL')
     size = (224, 224) if neuralnet is not "CNN" else (32, 32)
 
@@ -323,8 +324,6 @@ if __name__ == '__main__':
 
     try:
         train()
-    except:
+    finally:
         sio.disconnect()
-        exit()    
-    sio.disconnect()
-    exit()
+        exit() 

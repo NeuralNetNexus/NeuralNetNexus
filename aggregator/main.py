@@ -201,23 +201,25 @@ def test(test_dataset, model):
 
 if __name__ == '__main__':
 
-    # Get dataset from bucket
-    response = requests.get(f"http://bucket-service/datasets/{project_id}_test.zip")
-    if response.status_code == requests.codes.ok:
-        with open(f"/app/{project_id}_test.zip", 'wb') as file:
-            file.write(response.content)
-    else:
-        print('Error occurred while downloading the dataset. Status code:', response.status_code)
-        sys.exit(5)
+    try:    
+        # Get dataset from bucket
+        response = requests.get(f"http://bucket-service/datasets/{project_id}_test.zip")
+        if response.status_code == requests.codes.ok:
+            with open(f"/app/{project_id}_test.zip", 'wb') as file:
+                file.write(response.content)
+        else:
+            print('Error occurred while downloading the dataset. Status code:', response.status_code)
+            sys.exit(5)
 
-    def unzip_folder(zip_path, extract_path):
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(extract_path)
+        def unzip_folder(zip_path, extract_path):
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_path)
 
-    unzip_folder(f"/app/{project_id}_test.zip", f"/app/{project_id}_test")
+        unzip_folder(f"/app/{project_id}_test.zip", f"/app/{project_id}_test")
 
-    model = train(model_files, model)
+        model = train(model_files, model)
 
-    test_dataset = f"/app/{project_id}_test"
-    test(test_dataset, model)
-    sio.disconnect()
+        test_dataset = f"/app/{project_id}_test"
+    finally:
+        test(test_dataset, model)
+        sio.disconnect()

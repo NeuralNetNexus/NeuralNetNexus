@@ -112,7 +112,6 @@ def get_job_status(api_instance, job_name):
         if api_response.status.succeeded is not None:
             job_completed = True
         sleep(1)
-        print("Job status='%s'" % str(api_response.status))
 
 def main():
     # Configs can be set in Configuration class directly or using helper
@@ -152,7 +151,8 @@ def main():
     env_vars = {"PROJECT_ID": project_id, "MODEL": model, "N_SPLITS": n_splits}
     train_job = create_job_object(train_job_name, image_name, env_vars, completions=n_splits, parallelism=n_splits)
     create_job(batch_v1, train_job)
-    get_job_status(batch_v1, train_job_name)
+    for _ in range(n_splits):
+        get_job_status(batch_v1, train_job_name)
 
     # # =================  Aggregator Job  ================= #
     

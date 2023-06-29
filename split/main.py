@@ -129,17 +129,19 @@ def split_zip(pvc_path, project_id):
 if __name__ == '__main__':
     pvc_path = "/app"
 
-    # Get file from bucket
-    response = requests.get(f"http://bucket-service/datasets/{project_id}.zip")
+    try:
+        # Get file from bucket
+        response = requests.get(f"http://bucket-service/datasets/{project_id}.zip")
 
-    if response.status_code == requests.codes.ok:
-        with open(f"{pvc_path}/{project_id}.zip", 'wb') as file:
-            file.write(response.content)
-    else:
-        print('Error occurred while downloading the dataset. Status code:', response.status_code)
-        sys.exit(5)
+        if response.status_code == requests.codes.ok:
+            with open(f"{pvc_path}/{project_id}.zip", 'wb') as file:
+                file.write(response.content)
+        else:
+            print('Error occurred while downloading the dataset. Status code:', response.status_code)
+            sys.exit(5)
 
-    split_zip(pvc_path, project_id)
-    sio.disconnect()
-    print(f"Done!")
-    sys.exit()
+        split_zip(pvc_path, project_id)
+    finally:
+        sio.disconnect()
+        print(f"Done!")
+        sys.exit()
