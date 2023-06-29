@@ -169,5 +169,8 @@ def main():
     sio.emit('projectState', {'projectId': project_id, 'state': '[4/4] Done'})
 
 if __name__ == '__main__':
-    main()
-    sio.disconnect()
+    try:
+        main()
+    finally:
+        sio.disconnect()
+        exit()
