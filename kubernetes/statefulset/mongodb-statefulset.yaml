@@ -24,8 +24,8 @@ spec:
               mountPath: /data/db
           resources:
             limits:
-              cpu: 2000m
-              memory: 1000Mi
+              cpu: 500m
+              memory: 500Mi
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               value: root

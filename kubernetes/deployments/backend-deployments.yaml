@@ -19,8 +19,8 @@ spec:
         - containerPort: 3001
         resources:
           limits:
-            cpu: 2000m
-            memory: 1000Mi
+            cpu: 1000m
+            memory: 500Mi
         env:
         - name: MONGODB_CONNECTION
           valueFrom:
