@@ -127,10 +127,10 @@ export default function DashboardAppPage() {
         });
 
         socket.on('aggregatorMetrics', (values) => {
-          setAvgAccuracy(values.accuracy);
-          setPrecision(values.precision);
-          setRecall(values.recall);
-          setF1Score(values.f1Score);
+          setAvgAccuracy(values.accuracy.toFixed(2));
+          setPrecision(values.precision.toFixed(2));
+          setRecall(values.recall.toFixed(2));
+          setF1Score(values.f1Score.toFixed(2));
         });
   
         socket.on('trainingMetrics', (values) => {
@@ -353,7 +353,7 @@ export default function DashboardAppPage() {
                         </TableCell>
                         <TableCell align="right">
                           <a
-                            href={`/api/models/${fileName}`}
+                            href={`/api/models/${fileName}.pth`}
                             target="_blank"
                           >
                             <Iconify icon={'eva:download-outline'} sx={{ mr: 2 }} />

@@ -129,6 +129,8 @@ def main():
     sio.emit('joinProject', {'projectId': project_id})
     
     # =================  Split Job  ================= #
+    requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "# =================  Split Job  ================= #"})
+    sio.emit('projectState', {'projectId': project_id, 'logs': '# =================  Split Job  ================= #'})
 
     print("Project created. Starting split job...")
 
@@ -145,7 +147,9 @@ def main():
 
     print("Split job finished. Starting training job...")
 
-    # # =================  Training Jobs  ================= #
+    # =================  Training Jobs  ================= #
+    requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "# =================  Training Jobs  ================= #"})
+    sio.emit('projectState', {'projectId': project_id, 'logs': '# =================  Training Jobs  ================= #'})
 
     requests.patch(f"http://backend-service/projects/{project_id}/state", json={"state": "[2/4] Distributed Training"})
     sio.emit('projectState', {'projectId': project_id, 'state': '[2/4] Distributed Training'})
@@ -163,6 +167,8 @@ def main():
     print("Training job finished. Starting aggregator job...")
 
     # # =================  Aggregator Job  ================= #
+    requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "# =================  Aggregator Jobs  ================= #"})
+    sio.emit('projectState', {'projectId': project_id, 'logs': '# =================  Aggregator Jobs  ================= #'})
     
     requests.patch(f"http://backend-service/projects/{project_id}/state", json={"state": "[3/4] Aggregating"})
     sio.emit('projectState', {'projectId': project_id, 'state': '[3/4] Aggregating'})
@@ -177,6 +183,9 @@ def main():
     sio.emit('projectState', {'projectId': project_id, 'state': '[4/4] Done'})
 
     print("Aggregator job finished. Done!")
+
+    requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Aggregator job finished. Done!"})
+    sio.emit('projectState', {'projectId': project_id, 'logs': 'Aggregator job finished. Done!'})
 
 if __name__ == '__main__':
     try:

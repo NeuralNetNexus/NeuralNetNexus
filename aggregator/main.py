@@ -14,6 +14,7 @@ import requests
 import sys
 import zipfile
 from models.cnn import CNN
+import traceback
 
 project_id = os.getenv('PROJECT_ID')
 n_splits = int(os.getenv('N_SPLITS'))
@@ -24,7 +25,6 @@ model_files = []
 # Get Models from Bucket
 for i in range(1, n_splits+1):
     response = requests.get(f"http://bucket-service/models/{project_id}_{i}.pth")
-    print(f"Downloading model http://bucket-service/models/{project_id}_{i}.pth...")
     if response.status_code == requests.codes.ok:
         model_name = f"/app/{project_id}_{i}.pth"
         with open(model_name, 'wb') as file:
@@ -64,10 +64,12 @@ def train(model_files, model_name):
 
     n_models = len(model_files)
     for model_path in model_files:
-        model_state = torch.load(model_path) # load model parameters
+        loaded_model = torch.load(model_path) # load model
+        model_state = loaded_model.state_dict() # get state dictionary
 
         for k in params.keys():
             params[k] += model_state[k]
+
 
     # Average the parameters
     for k in params.keys():
@@ -86,6 +88,7 @@ def train(model_files, model_name):
         files = {'model': file}
         response = requests.post("http://bucket-service/models", files=files)
 
+    return model_avg
 
 def compute_metrics(confusion_matrix):
     true_positives = np.diag(confusion_matrix)
@@ -102,23 +105,26 @@ def pil_loader(path):
     return Image.open(path).convert('RGB')
 
 def test(test_dataset, model):
-    dataset_test_obj = datasets.ImageFolder(root=test_dataset, transform=image_transforms["train"], loader=lambda path: pil_loader(path))
-    test_loader = DataLoader(dataset_test_obj, batch_size=32, shuffle=True)
-
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     neuralnet = os.getenv('MODEL')
     size = (224, 224) if neuralnet != "CNN" else (32, 32)
 
-    image_transforms = [
+    image_transforms = transforms.Compose([
         transforms.Resize(size),
         transforms.ToTensor(),
-    ] 
+    ])
+
+    dataset_test_obj = datasets.ImageFolder(root=test_dataset, transform=image_transforms, loader=lambda path: pil_loader(path))
+    test_loader = DataLoader(dataset_test_obj, batch_size=32, shuffle=True)
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
     criterion = nn.CrossEntropyLoss()
-    confusion_matrix = torch.zeros(num_classes, num_classes)
+
     idx_to_class = {v: k for k, v in dataset_test_obj.class_to_idx.items()}
     num_classes = len(idx_to_class)
+
+    confusion_matrix = torch.zeros(num_classes, num_classes)
 
     # Validation - No gradient tracking needed
     with torch.no_grad():
@@ -126,6 +132,8 @@ def test(test_dataset, model):
         # Set to evaluation mode
         model.eval()
 
+        test_loss = 0
+        test_acc = 0
         # Validation loop
         for inputs, labels in test_loader:
             inputs = inputs.to(device)
@@ -203,14 +211,22 @@ def test(test_dataset, model):
 if __name__ == '__main__':
 
     try:    
+        print("Starting Aggregator")
         # Get dataset from bucket
+        
         response = requests.get(f"http://bucket-service/datasets/{project_id}_test.zip")
         if response.status_code == requests.codes.ok:
             with open(f"/app/{project_id}_test.zip", 'wb') as file:
                 file.write(response.content)
+            requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Downloaded test dataset."})
+            sio.emit('projectState', {'projectId': project_id, 'logs': "Downloaded test dataset."})
         else:
             print('Error occurred while downloading the dataset. Status code:', response.status_code)
+            requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f'Error occurred while downloading the dataset. Status code: {response.status_code}'})
+            sio.emit('projectState', {'projectId': project_id, 'logs': f'Error occurred while downloading the dataset. Status code: {response.status_code}'})
             sys.exit(5)
+
+        print("Dataset downloaded")
 
         def unzip_folder(zip_path, extract_path):
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -218,12 +234,30 @@ if __name__ == '__main__':
 
         unzip_folder(f"/app/{project_id}_test.zip", f"/app/{project_id}_test")
 
+        print("Dataset unzipped")
+
+        print("Starting training")
+
+        requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Starting weights aggregation."})
+        sio.emit('projectState', {'projectId': project_id, 'logs': "Starting weights aggregation."})
+
         model = train(model_files, model)
 
         test_dataset = f"/app/{project_id}_test"
 
+        print("Starting testing")
+        requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Starting testing."})
+        sio.emit('projectState', {'projectId': project_id, 'logs': "Starting testing."})
+
         test(test_dataset, model)
+
+        print("Testing completed")
+        requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Testing completed."})
+        sio.emit('projectState', {'projectId': project_id, 'logs': "Testing completed."})
     except:
+        traceback.print_exc()
+        requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Error aggregating weights. The module will restart."})
+        sio.emit('projectState', {'projectId': project_id, 'logs': "Error aggregating weights. The module will restart."})
         sio.disconnect()
         exit(5)
     sio.disconnect()

@@ -30,9 +30,21 @@ const myModelSchema = new Schema({
     type: Number,
     required: false
   },
+  logs: {
+    type: [String],
+    required: true,
+  },
   splits: [
     {
       id: {
+        type: Number,
+        required: true,
+      },
+      cpu_usage: {
+        type: Number,
+        required: true,
+      },
+      ram_usage: {
         type: Number,
         required: true,
       },
@@ -52,8 +64,16 @@ const myModelSchema = new Schema({
         type: [Number],
         required: true,
       },
+      logs: {
+        type: [String],
+        required: true,
+      }
     },
   ],
+  file_paths: {
+    type: [String],
+    required: true,
+  },
 }, {
   timestamps: true,
 });

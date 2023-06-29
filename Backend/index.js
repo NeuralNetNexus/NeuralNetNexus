@@ -302,13 +302,17 @@ async (req, res) => {
     const project = await Project.findOne({_id: projectId});
     project.n_splits = splits
     project.splits = []
+    project.logs = []
     for (let i = 0; i < splits; i++) {
       project.splits.push({
         id: i + 1,
         train_accuracies: [],
         val_accuracies: [],
         train_losses: [],
-        val_losses: []
+        val_losses: [],
+        cpu_usage: 0,
+        ram_usage: 0,
+        logs: [],
       })
     }
     await project.save()
@@ -346,11 +350,71 @@ async (req, res) => {
   }
 });
 
+// PATCH - Add logs to project split
+app.patch("/projects/:projectId/splits/:splitId/logs",
+async (req, res) => {
+    const { projectId, splitId } = req.params;
+    const { logs } = req.body;
+
+    try {
+      const project = await Project.findOne({ _id: projectId });
+      project.splits[splitId].logs.push(logs);
+
+      await project.save();
+      res.json({ project: project });
+    } catch (err) {
+      res.status(500).json({ 
+        error: 'PUT_PROJECT_FAILED',
+        message: 'Error when updating project'
+      });
+    }
+});
+
+// PATCH - Add logs to project
+app.patch("/projects/:projectId/logs",
+async (req, res) => {
+    const { projectId, splitId } = req.params;
+    const { logs } = req.body;
+
+    try {
+      const project = await Project.findOne({ _id: projectId });
+      project.logs.push(logs);
+
+      await project.save();
+      res.json({ project: project });
+    } catch (err) {
+      res.status(500).json({ 
+        error: 'PUT_PROJECT_FAILED',
+        message: 'Error when updating project'
+      });
+    }
+});
+
+// PATCH - Add filepath to project
+app.patch("/projects/:projectId/filepath",
+async (req, res) => {
+    const { projectId, splitId } = req.params;
+    const { logs } = req.body;
+
+    try {
+      const project = await Project.findOne({ _id: projectId });
+      project.logs.push(logs);
+
+      await project.save();
+      res.json({ project: project });
+    } catch (err) {
+      res.status(500).json({ 
+        error: 'PUT_PROJECT_FAILED',
+        message: 'Error when updating project'
+      });
+    }
+});
+
 // PATCH - Add accuracy to split
 app.patch("/projects/:projectId/splits/:splitId/metrics",
 async (req, res) => {
     const { projectId, splitId } = req.params;
-    const { train_accuracy, val_accuracy, train_loss, val_loss } = req.body;
+    const { train_accuracy, val_accuracy, train_loss, val_loss, cpu_usage, ram_usage } = req.body;
 
     try {
       const project = await Project.findOne({ _id: projectId });
@@ -358,6 +422,9 @@ async (req, res) => {
       project.splits[splitId].val_accuracies.push(val_accuracy);
       project.splits[splitId].train_losses.push(train_loss);
       project.splits[splitId].val_losses.push(val_loss);
+
+      project.splits[splitId].cpu_usage = cpu_usage;
+      project.splits[splitId].ram_usage = ram_usage;
 
       await project.save();
       res.json({ project: project });

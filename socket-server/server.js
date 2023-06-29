@@ -37,6 +37,18 @@ io.on('connection', (socket) => {
     io.to(data.projectId).emit('trainingMetrics', data);
   });
 
+  // Logs from the project logs
+  socket.on('projectLogs', (data) => {
+    console.log('projectLogs', data);
+    io.to(data.projectId).emit('projectLogs', data);
+  });
+
+  // Logs from training split 
+  socket.on('trainingSplitLogs', (data) => {
+    console.log('trainingSplitLogs', data);
+    io.to(data.projectId).emit('trainingSplitLogs', data);
+  });
+
   // Several metrics related to a final process from a related client
   socket.on('aggregatorMetrics', (data) => {
     console.log('aggregatorMetrics', data);
