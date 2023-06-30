@@ -87,7 +87,7 @@ const myModelSchema = new Schema({
       type: Number,
       required: false,
     },
-    f1Score: {
+    f1_score: {
       type: Number,
       required: false,
     },

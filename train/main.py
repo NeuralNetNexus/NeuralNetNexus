@@ -45,12 +45,12 @@ def train():
     if response.status_code == requests.codes.ok:
         with open(f"{dataset_path}.zip", 'wb') as file:
             file.write(response.content)
-        requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/logs", json={"logs": f"Downloading dataset {dataset_name}.zip"})
-        sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index + 1, 'logs': f"Downloading dataset {dataset_name}.zip"})
+        requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index}/logs", json={"logs": f"Downloading dataset {dataset_name}.zip"})
+        sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index+1, 'logs': f"Downloading dataset {dataset_name}.zip"})
     else:
         print('Error occurred while downloading the dataset. Status code:', response.status_code)
-        requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/logs", json={"logs": f'Error occurred while downloading the dataset. Status code: {response.status_code}. The module will restart.'})
-        sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index + 1, 'logs': f'Error occurred while downloading the dataset. Status code: {response.status_code}. The module will restart.'})
+        requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index}/logs", json={"logs": f'Error occurred while downloading the dataset. Status code: {response.status_code}. The module will restart.'})
+        sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index+1, 'logs': f'Error occurred while downloading the dataset. Status code: {response.status_code}. The module will restart.'})
         sys.exit(5)
 
     def unzip_folder(zip_path, extract_path):
@@ -121,8 +121,8 @@ def train():
         # Hyperparameters
         hps = {
             "lr": [0.001],
-            "batch_size": [32],
-            "epochs": [2],
+            "batch_size": [64],
+            "epochs": [25],
         }
         hps_iter = [dict(zip(hps.keys(), values)) for values in itertools.product(*hps.values())]
 
@@ -150,7 +150,7 @@ def train():
                 model_collection = [models.CNN(num_classes=num_classes)]    
             
             for k, model in enumerate(model_collection):
-                device = torch.device("cuda:0" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu")
+                device = torch.device("cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
                 # Send the model to the processing unit
                 model_ft = model.to(device)
@@ -183,15 +183,15 @@ def train():
                 best_model = None
 
                 print(f"==========  TRAIN  ==========")
-                requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/logs", json={"logs": "# ==================== Train ==================== #"})
-                sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index + 1, 'logs': "# ==================== Train ==================== #"})                
+                requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index}/logs", json={"logs": "# ==================== Train ==================== #"})
+                sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index+1, 'logs': "# ==================== Train ==================== #"})                
 
                 for epoch_i in range(hp["epochs"]):
                     epoch_start = time.time()
                     print("Epoch: {}/{}".format(epoch_i+1, hp["epochs"]))
 
-                    requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/logs", json={"logs": "Epoch: {}/{}".format(epoch_i+1, hp["epochs"])})
-                    sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index + 1, 'logs': "Epoch: {}/{}".format(epoch_i+1, hp["epochs"])})
+                    requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index}/logs", json={"logs": "Epoch: {}/{}".format(epoch_i+1, hp["epochs"])})
+                    sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index+1, 'logs': "Epoch: {}/{}".format(epoch_i+1, hp["epochs"])})
                     
                     # Set to training mode
                     model_ft.train()
@@ -287,8 +287,8 @@ def train():
                     log = "\tTraining: Loss - {:.4f}, Accuracy - {:.2f}%\n\tValidation: Loss - {:.4f}, Accuracy - {:.2f}%\n\tTime: {:.4f}s".format(avg_train_loss, avg_train_acc*100, avg_valid_loss, avg_valid_acc*100, epoch_end-epoch_start)
                     print(log)
 
-                    requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/logs", json={"logs": log})
-                    sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index + 1, 'logs': log})
+                    requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index}/logs", json={"logs": log})
+                    sio.emit('trainingSplitLogs', {'projectId': project_id, 'jobIndex': job_completion_index+1, 'logs': log})
 
                     # Save if the model has best accuracy till now
                     if epoch_i == hp["epochs"] - 1:
@@ -306,15 +306,6 @@ def train():
 
                     try:
                         data = {
-                            "train_accuracy": avg_train_acc*100,
-                            "train_loss": avg_train_loss,
-                            "val_accuracy": avg_valid_acc*100,
-                            "val_loss": avg_valid_loss,
-                            "cpu_usage": cpu_usage,
-                            "ram_usage": ram_usage
-                        }
-                        requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index+1}/metrics", json=data)
-                        sio.emit('trainingMetrics', { 
                             'projectId': project_id,
                             "train_index": job_completion_index+1, 
                             "epoch": epoch_i+1,
@@ -324,7 +315,9 @@ def train():
                             "val_loss": avg_valid_loss,
                             "cpu_usage": cpu_usage,
                             "ram_usage": ram_usage
-                        })
+                        }
+                        requests.patch(f"http://backend-service/projects/{project_id}/splits/{job_completion_index}/metrics", json=data)
+                        sio.emit('trainingMetrics', data)
                     except:
                         print("Error sending the metrics to the backend-service or websocket")
 
@@ -334,12 +327,15 @@ if __name__ == '__main__':
     sio.connect('ws://socket-service')
     sio.emit('joinProject', {"projectId": project_id})
 
+    import time
+    time.sleep(100)
+
     try:
-        requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f"Starting training #{job_completion_index} process."})
-        sio.emit('projectState', {'projectId': project_id, 'logs': f"Starting training #{job_completion_index} process."})
+        requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f"Starting training #{job_completion_index+1} process."})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': f"Starting training #{job_completion_index+1} process."})
         train()
-        requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f"Completed training #{job_completion_index} process."})
-        sio.emit('projectState', {'projectId': project_id, 'logs': f"Completed training #{job_completion_index} process."})
+        requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f"Completed training #{job_completion_index+1} process."})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': f"Completed training #{job_completion_index+1} process."})
     except Exception as e:
         print(e)
         sio.disconnect()

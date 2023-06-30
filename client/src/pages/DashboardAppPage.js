@@ -42,6 +42,7 @@ export default function DashboardAppPage() {
   const [name, setName] = useState('-');
   const [logs, setLogs] = useState([]);
   const [expanded, setExpanded] = useState(false);
+  const [expandedLogs, setExpandedLogs] = useState(false);
   const [graphData, setGraphData] = useState([]);
 
   const [accuracy_avg, setAvgAccuracy] = useState('-');
@@ -55,6 +56,9 @@ export default function DashboardAppPage() {
   const [page, setPage] = useState(0);
 
   const handleChange = (panel) => (event, isExpanded) => {
+    setExpanded(isExpanded ? panel : false);
+  };
+  const handleChangeLogs = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
   const handleChangePage = (event, newPage) => {
@@ -79,7 +83,7 @@ export default function DashboardAppPage() {
         setNSplit(project.n_splits || '-');
         setName(project.name);
         
-        setLogs(project.logs);
+        setLogs((previousLogs) => [...previousLogs, ...project.logs]);
 
         setAvgAccuracy(project.aggregator.accuracy.toFixed(2));
         setAvgLoss(project.aggregator.loss.toFixed(2));
@@ -94,11 +98,14 @@ export default function DashboardAppPage() {
             let epochs = Array.from({ length: size }, (_, index) => index + 1);
   
             let obj = {
+              source: i+1,
               epoch: epochs,
-              trainAccuracy: project.splits[i].train_accuracies,
-              valAccuracy: project.splits[i].train_accuracies,
-              trainLoss: project.splits[i].train_accuracies,
-              valLoss: project.splits[i].train_accuracies,
+              cpu_usage: project.splits[i].cpu_usage,
+              ram_usage: project.splits[i].ram_usage,
+              trainAccuracy: project.splits[i].train_accuracies.map((value) => value.toFixed(2)),
+              valAccuracy: project.splits[i].train_accuracies.map((value) => value.toFixed(2)),
+              trainLoss: project.splits[i].train_accuracies.map((value) => value.toFixed(2)),
+              valLoss: project.splits[i].train_accuracies.map((value) => value.toFixed(2)),
               logs: project.splits[i].logs,
             };
             data.push(obj);
@@ -129,6 +136,7 @@ export default function DashboardAppPage() {
                 valAccuracy: [],
                 trainLoss: [],
                 valLoss: [],
+                logs: [],
               };
               data.push(obj);
             }
@@ -137,11 +145,28 @@ export default function DashboardAppPage() {
           });
         });
 
+        socket.on('projectLogs', (values) => {
+          console.log('trainingLogs ', values);
+          setLogs((prevLogs) => [...prevLogs, values.logs]);
+        });
+
+        socket.on('trainingSplitLogs', (values) => {
+          console.log('trainingSplitLogs ', values);
+          setGraphData((prevGraphData) => {
+            const updatedGraphData = [...prevGraphData];
+            const sourceIndex = updatedGraphData.findIndex((data) => data.source === values.jobIndex);
+            const sourceData = updatedGraphData[sourceIndex];
+            sourceData.logs.push(values.logs);
+            return updatedGraphData;
+          });
+        });
+
         socket.on('aggregatorMetrics', (values) => {
+          setAvgLoss(values.loss.toFixed(2));
           setAvgAccuracy(values.accuracy.toFixed(2));
           setPrecision(values.precision.toFixed(2));
           setRecall(values.recall.toFixed(2));
-          setF1Score(values.f1Score.toFixed(2));
+          setF1Score(values.f1_score.toFixed(2));
         });
   
         socket.on('trainingMetrics', (values) => {
@@ -151,9 +176,12 @@ export default function DashboardAppPage() {
   
             if (sourceIndex !== -1) {
               const sourceData = updatedGraphData[sourceIndex];
+
+              sourceData.cpu_usage = values.cpu_usage;
+              sourceData.ram_usage = values.ram_usage;
               sourceData.epoch.push(sourceData.trainAccuracy.length + 1);
-              sourceData.trainAccuracy.push(values.train_accuracy);
-              sourceData.valAccuracy.push(values.val_accuracy);
+              sourceData.trainAccuracy.push(values.train_accuracy.toFixed(2));
+              sourceData.valAccuracy.push(values.val_accuracy.toFixed(2));
               sourceData.trainLoss.push(values.train_loss.toFixed(2));
               sourceData.valLoss.push(values.val_loss.toFixed(2));
             } else {
@@ -161,8 +189,8 @@ export default function DashboardAppPage() {
                 source: updatedGraphData.length + 1,
                 cpu_usage: values.cpu_usage,
                 ram_usage: values.ram_usage,
-                trainAccuracy: [values.train_accuracy],
-                valAccuracy: [values.val_accuracy],
+                trainAccuracy: [values.train_accuracy.toFixed(2)],
+                valAccuracy: [values.val_accuracy.toFixed(2)],
                 trainLoss: [values.train_loss.toFixed(2)],
                 valLoss: [values.val_loss.toFixed(2)],
                 epoch: [1],
@@ -205,6 +233,8 @@ export default function DashboardAppPage() {
             <AppWidgetSummary title="Number of Splits" text={nSplit} color="info" icon={'ant-design:split-cells-outlined'} />
           </Grid>
 
+          { accuracy_avg > 0 ?
+          <>
           <Grid item xs={12} sm={6} md={2}>
             <AppWidgetSummaryNoIcon title="Accuracy" text={accuracy_avg} color="secondary" />
           </Grid>
@@ -224,8 +254,25 @@ export default function DashboardAppPage() {
           <Grid item xs={12} sm={6} md={2}>
             <AppWidgetSummaryNoIcon title="F1 Score" text={scoreF1} color="secondary"  />
           </Grid>
+          </>
+          : null}
 
-          <LogDisplay logs={logs} />
+          { logs.length > 0 ?
+          <Grid item md={12}>
+          <Accordion>
+              <AccordionSummary
+                expandIcon={"↑"}
+              >
+                <Typography variant="h5" sx={{ paddingTop: "30px", paddingLeft: "30px"}}>
+                  Logs
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <LogDisplay logs={logs} />
+              </AccordionDetails>
+            </Accordion>
+          </Grid>
+          : null}
           
           { graphData.length > 0 ?
             <Typography variant="h4" sx={{ mb: 1, paddingTop: "50px", paddingLeft: "30px"}}>
@@ -325,14 +372,29 @@ export default function DashboardAppPage() {
                     />
                   </Grid>
                 </Grid>
-                <LogDisplay logs={item.logs} />
+                { logs.length > 0 ?
+                <Grid item md={12}>
+                <Accordion>
+                    <AccordionSummary
+                      expandIcon={"↑"}
+                    >
+                      <Typography variant="h5" sx={{ mb: 1, paddingTop: "50px", paddingLeft: "30px"}}>
+                        Trainning Logs
+                      </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <LogDisplay logs={item.logs} sx={{ mb: 1, paddingTop: "80px", paddingLeft: "60px"}} />
+                    </AccordionDetails>
+                  </Accordion>
+                </Grid>
+                : null}
               </AccordionDetails>
             </Accordion>
           </Grid>
         ))}
         </Grid>
 
-        {precision !== "-" ?
+        {precision > 0 ?
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Grid item xs={12} sm={6} md={6} paddingBottom={10} paddingTop={10}>
             <img src={`/api/models/${files[0]}`} alt="Confusion Matrix" />
@@ -355,7 +417,7 @@ export default function DashboardAppPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {precision !== "-" ?
+                  {precision > 0 ?
                   files.map((file) => {
                     const fileName = file.split(".")[0];
                     if(file.includes("png")){

@@ -64,13 +64,13 @@ def split_zip(pvc_path, project_id):
         print(f'File {zip_path} uploaded successfully.')
 
         requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Uploading test dataset to bucket service."})
-        sio.emit('projectState', {'projectId': project_id, 'logs': 'Uploading test dataset to bucket service.'})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': 'Uploading test dataset to bucket service.'})
 
     else:
         print(f'Error occurred while uploading the file {zip_path}. Status code:', response.status_code)
 
         requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f'Error occurred while uploading the file {zip_path}. Status code: {response.status_code}. The module will restart..'})
-        sio.emit('projectState', {'projectId': project_id, 'logs': f'Error occurred while uploading the file {zip_path}. Status code: {response.status_code}. The module will restart.'})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': f'Error occurred while uploading the file {zip_path}. Status code: {response.status_code}. The module will restart.'})
         
         sys.exit(5)
 
@@ -84,7 +84,7 @@ def split_zip(pvc_path, project_id):
         }
 
         requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Split batch number sent to the backend-service."})
-        sio.emit('projectState', {'projectId': project_id, 'logs': "Split batch number sent to the backend-service."})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': "Split batch number sent to the backend-service."})
 
         requests.patch(f"http://backend-service/projects/{project_id}/n-splits", json=data)
         sio.emit('splitNumber', {"projectId": project_id, "n_batch": ratio})
@@ -92,7 +92,7 @@ def split_zip(pvc_path, project_id):
     except:
         print("Error sending the number of splits to the backend-service or websocket")
         requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Error sending the number of splits to the backend-service or websocket. The module will restart."})
-        sio.emit('projectState', {'projectId': project_id, 'logs': "Error sending the number of splits to the backend-service or websocket. The module will restart."})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': "Error sending the number of splits to the backend-service or websocket. The module will restart."})
         sys.exit(5)
 
     # Get the list of classes
@@ -105,7 +105,7 @@ def split_zip(pvc_path, project_id):
         print(f"Progress: {idx / len(class_list) * 100}%")
 
         requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f"Progress: {idx / len(class_list) * 100}%"})
-        sio.emit('projectState', {'projectId': project_id, 'logs': f"Progress: {idx / len(class_list) * 100}%"})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': f"Progress: {idx / len(class_list) * 100}%"})
         
         # Get the list of images in the class folder
         images_list = os.listdir(class_path)
@@ -136,7 +136,7 @@ def split_zip(pvc_path, project_id):
     print(f"Zipping results...")
 
     requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f"Progress: 100%\nZipping results..."})
-    sio.emit('projectState', {'projectId': project_id, 'logs': f"Progress: 100%\nZipping results..."})
+    sio.emit('projectLogs', {'projectId': project_id, 'logs': f"Progress: 100%\nZipping results..."})
     
     for split_num in range(1, ratio + 1):
         path = os.path.join(pvc_path, f"{project_id}_{split_num}")
@@ -153,13 +153,13 @@ def split_zip(pvc_path, project_id):
             print(f'File {zip_path} uploaded successfully.')
 
             requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f"Uploaded micro-dataset {split_num} to bucket service."})
-            sio.emit('projectState', {'projectId': project_id, 'logs': f"Uploaded micro-dataset {split_num} to bucket service."})
+            sio.emit('projectLogs', {'projectId': project_id, 'logs': f"Uploaded micro-dataset {split_num} to bucket service."})
             
         else:
             print(f'Error occurred while uploading the file {zip_path}. Status code:', response.status_code)
 
             requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f'Error occurred while uploading the file {zip_path}. Status code: {response.status_code}. The module will restart.'})
-            sio.emit('projectState', {'projectId': project_id, 'logs': f'Error occurred while uploading the file {zip_path}. Status code: {response.status_code}. The module will restart.'})
+            sio.emit('projectLogs', {'projectId': project_id, 'logs': f'Error occurred while uploading the file {zip_path}. Status code: {response.status_code}. The module will restart.'})
             
             sys.exit(5)
 
@@ -180,11 +180,11 @@ if __name__ == '__main__':
                 file.write(response.content)
 
             requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Downloaded dataset from bucket service."})
-            sio.emit('projectState', {'projectId': project_id, 'logs': 'Downloaded dataset from bucket service.'})
+            sio.emit('projectLogs', {'projectId': project_id, 'logs': 'Downloaded dataset from bucket service.'})
         else:
             print('Error occurred while downloading the dataset. Status code:', response.status_code)
             requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Error: occurred while downloading the dataset."})
-            sio.emit('projectState', {'projectId': project_id, 'logs': 'Error: occurred while downloading the dataset. The module will restart.'})
+            sio.emit('projectLogs', {'projectId': project_id, 'logs': 'Error: occurred while downloading the dataset. The module will restart.'})
             sys.exit(5)
 
         split_zip(pvc_path, project_id)

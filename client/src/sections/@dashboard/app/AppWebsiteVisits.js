@@ -23,6 +23,11 @@ export default function AppWebsiteVisits({ title, subheader, chartLabels, chartD
     xaxis: { title: { text: 'Epoch' }, type: 'string' },
     yaxis: { 
       title: { text: title } ,
+      labels: {
+        formatter: (value) => {
+          return value.toFixed(2);
+        },
+      },
       tickAmount: 3, 
     },
     tooltip: {

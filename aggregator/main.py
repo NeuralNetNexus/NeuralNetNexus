@@ -202,18 +202,18 @@ def test(test_dataset, model):
     sio.emit('aggregatorMetrics', {
                 "projectId": project_id,
                 "loss": avg_test_loss,
-                "accuracy": avg_test_acc*100+1, 
+                "accuracy": avg_test_acc*100, 
                 "precision": precision*100,
                 "recall": recall*100,
-                "f1Score": f1_score*100
+                "f1_score": f1_score*100
             })
     
     requests.patch(f"http://backend-service/projects/{project_id}/aggregatormetrics", json={
                 "loss": avg_test_loss,
-                "accuracy": avg_test_acc*100+1, 
+                "accuracy": avg_test_acc*100, 
                 "precision": precision*100,
                 "recall": recall*100,
-                "f1Score": f1_score*100})
+                "f1_score": f1_score*100})
 
 if __name__ == '__main__':
 
@@ -226,11 +226,11 @@ if __name__ == '__main__':
             with open(f"/app/{project_id}_test.zip", 'wb') as file:
                 file.write(response.content)
             requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Downloaded test dataset."})
-            sio.emit('projectState', {'projectId': project_id, 'logs': "Downloaded test dataset."})
+            sio.emit('projectLogs', {'projectId': project_id, 'logs': "Downloaded test dataset."})
         else:
             print('Error occurred while downloading the dataset. Status code:', response.status_code)
             requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f'Error occurred while downloading the dataset. Status code: {response.status_code}'})
-            sio.emit('projectState', {'projectId': project_id, 'logs': f'Error occurred while downloading the dataset. Status code: {response.status_code}'})
+            sio.emit('projectLogs', {'projectId': project_id, 'logs': f'Error occurred while downloading the dataset. Status code: {response.status_code}'})
             sys.exit(5)
 
         print("Dataset downloaded")
@@ -246,7 +246,7 @@ if __name__ == '__main__':
         print("Starting training")
 
         requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Starting weights aggregation."})
-        sio.emit('projectState', {'projectId': project_id, 'logs': "Starting weights aggregation."})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': "Starting weights aggregation."})
 
         model = train(model_files, model)
 
@@ -254,17 +254,17 @@ if __name__ == '__main__':
 
         print("Starting testing")
         requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Starting testing."})
-        sio.emit('projectState', {'projectId': project_id, 'logs': "Starting testing."})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': "Starting testing."})
 
         test(test_dataset, model)
 
         print("Testing completed")
         requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Testing completed."})
-        sio.emit('projectState', {'projectId': project_id, 'logs': "Testing completed."})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': "Testing completed."})
     except:
         traceback.print_exc()
         requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": "Error aggregating weights. The module will restart."})
-        sio.emit('projectState', {'projectId': project_id, 'logs': "Error aggregating weights. The module will restart."})
+        sio.emit('projectLogs', {'projectId': project_id, 'logs': "Error aggregating weights. The module will restart."})
         sio.disconnect()
         exit(5)
     sio.disconnect()

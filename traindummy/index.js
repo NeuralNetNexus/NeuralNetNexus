@@ -51,7 +51,7 @@ socket.on('connect', () => {
       "loss": randomLoss,
       "precision": randomInt(60, 90),
       "recall": randomInt(60, 90),
-      "f1score": randomInt(60, 90)
+      "f1_score": randomInt(60, 90)
     });
   }, 5000);
 });

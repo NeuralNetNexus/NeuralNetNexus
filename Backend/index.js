@@ -207,9 +207,18 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
       size: req.file.size / (1024 * 1024), // Convert bytes to MB
       model,
       state: 'Pending',
-      name: projectName
+      name: projectName,
+      logs: [],
+      aggregator: {
+        accuracy: 0,
+        loss: 0,
+        f1_score: 0,
+        precision: 0,
+        recall: 0
+      }
     };
-    console.log(projectInfo)
+
+    // console.log(projectInfo)
 
     const project = new Project(projectInfo);
     const savedProject = await project.save();
@@ -226,7 +235,7 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
     .then(response => {
       console.log('File uploaded successfully');
       // Delete the file after upload
-      fs.unlinkSync(modifiedFilePath);
+      // fs.unlinkSync(modifiedFilePath);
     })
     .catch(error => {
       console.error('Error uploading file:', error);
@@ -234,10 +243,10 @@ app.post("/upload", upload.single("dataset"), async (req, res, next) => {
 
     // Trigger the train-suppervisor job
     const jobManifest = k8sObjects.getTrainSupervisorObject(projectId, model);
-    console.log(jobManifest)
+    // console.log(jobManifest)
     k8sApi.createNamespacedJob('default', jobManifest)
       .then((response) => {
-        console.log('Job created with response:', response.body);
+        // console.log('Job created with response:', response.body);
         return res.status(200).json({
           message: 'ZIP file received',
           projectId: projectId
@@ -348,7 +357,7 @@ async (req, res) => {
 // PATCH - Add logs to project
 app.patch("/projects/:projectId/logs",
 async (req, res) => {
-    const { projectId, splitId } = req.params;
+    const { projectId } = req.params;
     const { logs } = req.body;
 
     try {
@@ -393,6 +402,7 @@ async (req, res) => {
 
     try {
       const project = await Project.findOne({ _id: projectId });
+
       project.splits[splitId].train_accuracies.push(train_accuracy);
       project.splits[splitId].val_accuracies.push(val_accuracy);
       project.splits[splitId].train_losses.push(train_loss);
@@ -415,7 +425,7 @@ async (req, res) => {
 app.patch("/projects/:projectId/aggregatormetrics",
 async (req, res) => {
     const { projectId, splitId } = req.params;
-    const { loss, accuracy, precision, recall, f1Score } = req.body;
+    const { loss, accuracy, precision, recall, f1_score } = req.body;
 
     try {
       const project = await Project.findOne({ _id: projectId });
@@ -423,7 +433,7 @@ async (req, res) => {
       project.aggregator.accuracy = accuracy;
       project.aggregator.precision = precision;
       project.aggregator.recall = recall;
-      project.aggregator.f1Score = f1Score;
+      project.aggregator.f1_score = f1_score;
 
       await project.save();
       res.json({ project: project });
