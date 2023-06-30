@@ -103,9 +103,9 @@ export default function DashboardAppPage() {
               cpu_usage: project.splits[i].cpu_usage,
               ram_usage: project.splits[i].ram_usage,
               trainAccuracy: project.splits[i].train_accuracies.map((value) => value.toFixed(2)),
-              valAccuracy: project.splits[i].train_accuracies.map((value) => value.toFixed(2)),
-              trainLoss: project.splits[i].train_accuracies.map((value) => value.toFixed(2)),
-              valLoss: project.splits[i].train_accuracies.map((value) => value.toFixed(2)),
+              valAccuracy: project.splits[i].val_accuracies.map((value) => value.toFixed(2)),
+              trainLoss: project.splits[i].train_losses.map((value) => value.toFixed(2)),
+              valLoss: project.splits[i].val_losses.map((value) => value.toFixed(2)),
               logs: project.splits[i].logs,
             };
             data.push(obj);
