@@ -5,7 +5,6 @@ metadata:
   labels:
     app: mongodb
 spec:
-  replicas: 5
   selector:
     matchLabels:
       app: mongodb
@@ -23,6 +22,10 @@ spec:
           volumeMounts:
             - name: mongodb-data
               mountPath: /data/db
+          resources:
+            limits:
+              cpu: 500m
+              memory: 500Mi
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               value: root

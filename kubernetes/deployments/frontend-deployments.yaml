@@ -6,7 +6,6 @@ spec:
   selector:
     matchLabels:
       app: frontend
-  replicas: 1
   template:
     metadata:
       labels:
@@ -18,6 +17,10 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8090
+        resources:
+          limits:
+            cpu: 500m
+            memory: 500Mi
       nodeSelector:
         kubernetes.io/role: platform
         
