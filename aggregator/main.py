@@ -62,24 +62,21 @@ def train(model_files, model_name):
     for k in params.keys():
         params[k] = torch.zeros_like(params[k])
 
-    n_models = len(model_files)
-    for model_path in model_files:
-        loaded_model = torch.load(model_path) # load model
-        model_state = loaded_model.state_dict() # get state dictionary
+    examples_count = requests.get(f"http://backend-service/projects/{project_id}").json()["project"]["total_images"]
+    total_examples = sum(examples_count)
+
+    for model_path, count in zip(model_files, examples_count):
+        loaded_model = torch.load(model_path)  # load model
+        model_state = loaded_model.state_dict()  # get state dictionary
 
         for k in params.keys():
-            params[k] += model_state[k]
+            params[k] += model_state[k] * count / total_examples  # weight based on examples count
 
-
-    # Average the parameters
-    for k in params.keys():
-        params[k] /= n_models
-
-    # Load averaged parameters into the model architecture
+    # Load weighted parameters into the model architecture
     model_avg = get_model(model_name, numclasses)
     model_avg.load_state_dict(params)
 
-    # Save the averaged model
+    # Save the weighted model
     saved_model_path = f'/app/model_{project_id}.pth'
     torch.save(model_avg.state_dict(), saved_model_path)
 

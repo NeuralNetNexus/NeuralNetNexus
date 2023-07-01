@@ -335,6 +335,27 @@ async (req, res) => {
 });
 
 // PATCH - Add logs to project split
+app.patch("/projects/:projectId/total_images",
+async (req, res) => {
+    const { projectId } = req.params;
+    const { total_images } = req.body;
+
+    try {
+      const project = await Project.findOne({ _id: projectId });
+      
+      project.total_images = total_images;
+
+      await project.save();
+      res.json({ project: project });
+    } catch (err) {
+      res.status(500).json({ 
+        error: 'PUT_PROJECT_FAILED',
+        message: 'Error when updating project'
+      });
+    }
+});
+
+// PATCH - Add logs to project split
 app.patch("/projects/:projectId/splits/:splitId/logs",
 async (req, res) => {
     const { projectId, splitId } = req.params;

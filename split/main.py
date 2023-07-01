@@ -98,6 +98,8 @@ def split_zip(pvc_path, project_id):
     # Get the list of classes
     class_list = os.listdir(train_path)
 
+    _total_images = [0] * ratio
+
     # Iterate over each class
     for idx, class_name in enumerate(class_list):
         class_path = os.path.join(train_path, class_name)
@@ -132,8 +134,15 @@ def split_zip(pvc_path, project_id):
                     image_path = os.path.join(class_path, image_name)
                     shutil.copy(image_path, split_dir)
 
+            if end_index > total_images:
+                end_index = total_images
+            _total_images[split_num - 1] += end_index - start_index
+
     print(f"Progress: 100%")
     print(f"Zipping results...")
+
+    # Update the total_images list
+    requests.patch(f"http://backend-service/projects/{project_id}/total_images", json={'total_images': _total_images})
 
     requests.patch(f"http://backend-service/projects/{project_id}/logs", json={"logs": f"Progress: 100%\nZipping results..."})
     sio.emit('projectLogs', {'projectId': project_id, 'logs': f"Progress: 100%\nZipping results..."})

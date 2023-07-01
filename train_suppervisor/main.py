@@ -156,7 +156,8 @@ def main():
 
     train_job_name = f"train-job-{project_id}"
     image_name = "rafaelxokito/neuralnetnexustrain:latest"
-    n_splits = requests.get(f"http://backend-service/projects/{project_id}").json()["project"]["n_splits"]
+    project = requests.get(f"http://backend-service/projects/{project_id}").json()["project"]
+    n_splits = project["n_splits"]
 
     env_vars = {"PROJECT_ID": project_id, "MODEL": model, "N_SPLITS": n_splits}
     train_job = create_job_object(train_job_name, image_name, env_vars, completions=n_splits, parallelism=n_splits)

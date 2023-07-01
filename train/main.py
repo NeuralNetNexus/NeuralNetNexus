@@ -122,7 +122,7 @@ def train():
         hps = {
             "lr": [0.001],
             "batch_size": [64],
-            "epochs": [25],
+            "epochs": [5],
         }
         hps_iter = [dict(zip(hps.keys(), values)) for values in itertools.product(*hps.values())]
 

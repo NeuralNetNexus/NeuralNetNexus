@@ -26,6 +26,10 @@ const myModelSchema = new Schema({
     type: Number,
     required: false
   },
+  total_images: { // Contains a list of the total number of images in each split
+    type: [Number],
+    required: false
+  },
   logs: {
     type: [String],
     required: true,
