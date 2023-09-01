@@ -1,6 +1,6 @@
 # 🚀 NeuralNetNexus
 
-NeuralNetNexus is an innovative platform designed to streamline the process of training and aggregating machine learning models using a distributed approach. Leveraging the power of Kubernetes, it offers a scalable and efficient solution for handling large datasets and complex neural network architectures. Whether you're a machine learning enthusiast or a seasoned researcher, NeuralNetNexus provides a user-friendly interface and robust backend services to bring your AI projects to life. For a detailed insight into the project, check out the report available at [assets/ODDAI_Is_All_You_Need.pdf](assets/ODDAI_Is_All_You_Need.pdf) in the repo.
+NeuralNetNexus is an innovative platform designed to streamline the process of training and aggregating machine learning models using a distributed approach. Leveraging the power of Kubernetes, it offers a scalable and efficient solution for handling large datasets and complex neural network architectures. Whether you're a machine learning enthusiast or a seasoned researcher, NeuralNetNexus provides a user-friendly interface and robust backend services to bring your AI projects to life. For a detailed insight into the project, check out the report available at [report](assets/ODDAI_Is_All_You_Need.pdf) in the repo.
 
 ## 📌 Table of Contents
 
