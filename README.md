@@ -2,9 +2,16 @@
 
 NeuralNetNexus is an innovative platform designed to streamline the process of training and aggregating machine learning models using a distributed approach. Leveraging the power of Kubernetes, it offers a scalable and efficient solution for handling large datasets and complex neural network architectures. Whether you're a machine learning enthusiast or a seasoned researcher, NeuralNetNexus provides a user-friendly interface and robust backend services to bring your AI projects to life.
 
+## 🎥 Project Demonstration
+
+For a visual demonstration of how the entire project functions, we have prepared a video walkthrough. You can watch the video and get a comprehensive understanding of the project's workflow, features, and capabilities.
+
+[Watch the Demonstration Video](https://youtu.be/VaQolRGmXDo)
+
 ## 📌 Table of Contents
 
 - [🚀 NeuralNetNexus](#-neuralnetnexus)
+  - [🎥 Project Demonstration](#-project-demonstration)
   - [📌 Table of Contents](#-table-of-contents)
   - [🏗️ Architecture](#️-architecture)
   - [🛠️ Implementation](#️-implementation)
@@ -20,7 +27,6 @@ NeuralNetNexus is an innovative platform designed to streamline the process of t
   - [📚 Additional Resources and Setup](#-additional-resources-and-setup)
     - [🛠️ MicroK8s Worker Setup](#️-microk8s-worker-setup)
     - [🐳 Dockerized Services](#-dockerized-services)
-    - [🎥 Project Demonstration](#-project-demonstration)
 
 ## 🏗️ Architecture
 
@@ -116,9 +122,3 @@ For those interested in setting up the workers, we have provided a script named 
 ### 🐳 Dockerized Services
 
 Each service in our system comes with its own `Dockerfile`. This allows developers and users to run each service individually in a Docker container. To do so, navigate to the respective service's directory and build the Docker image using the provided Dockerfile. Once built, you can run the service in isolation, making it easier for debugging, development, and testing.
-
-### 🎥 Project Demonstration
-
-For a visual demonstration of how the entire project functions, we have prepared a video walkthrough. You can watch the video and get a comprehensive understanding of the project's workflow, features, and capabilities.
-
-[Watch the Demonstration Video](https://youtu.be/VaQolRGmXDo)
